@@ -656,7 +656,11 @@ function BoringItem() {
 }
 
 function WinItem() {
-  Add(Inventory, SpecialItem(), 1);
+  if (Max(250, Random(999)) < Inventory.length()) {
+    Add(Inventory, Pick(Inventory.rows()).firstChild.innerText, 1);
+  } else {
+    Add(Inventory, SpecialItem(), 1);
+  }
 }
 
 function CompleteQuest() {

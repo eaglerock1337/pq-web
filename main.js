@@ -738,6 +738,11 @@ function toRoman(n) {
     s = "-";
     n = -n;
   }
+
+  while (_rome(10000,"T")) {0;}
+  _rome(9000,"MT");
+  _rome(5000,"A");
+  _rome(4000,"MA");
   while (_rome(1000,"M")) {0;}
   _rome(900,"CM");
   _rome(500,"D");
@@ -763,6 +768,10 @@ function toArabic(s) {
     n += dn;
     return true;
   }
+  while (_arab("T",10000)) {0;}
+  _arab("MT",9000);
+  _arab("A",5000);
+  _arab("MA",4000);
   while (_arab("M",1000)) {0;}
   _arab("CM",900);
   _arab("D",500);

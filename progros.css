@@ -76,7 +76,7 @@ th:first-child {
 
 #titlebar > img { 
   vertical-align: bottom;
-  margin: 2 0 0 2;
+  margin: 2px 0 0 2px;
 }
 
 #quit {

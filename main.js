@@ -90,7 +90,7 @@ function Split(s, field, separator) {
 
 function Indefinite(s, qty) {
   if (qty == 1) {
-    if (Pos(s.charAt(0), 'AEIOUÜaeiouü') > 0)
+    if (Pos(s.charAt(0), 'AEIOUÃœaeiouÃ¼') > 0)
       return 'an ' + s;
     else
       return 'a ' + s;

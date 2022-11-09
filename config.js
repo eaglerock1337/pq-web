@@ -302,7 +302,7 @@ Number.prototype.div = function (divisor) {
 
 
 function LevelUpTime(level) {  // seconds
-  // 20 minutes for for level 1
+  // 20 minutes for level 1
   // exponential increase after that
   return Math.round((20 + Math.pow(1.15, level)) * 60);
 }

@@ -302,7 +302,7 @@ Number.prototype.div = function (divisor) {
 
 
 function LevelUpTime(level) {  // seconds
-  // 20 minutes for for level 1
+  // 20 minutes for level 1
   // exponential increase after that
   return Math.round((20 + Math.pow(1.15, level)) * 60);
 }
@@ -342,7 +342,7 @@ K.Spells = [
   "Sadness",
   "Seasick",
   "Shoelaces",
-  "Innoculate",
+  "Inoculate",
   "Cone of Annoyance",
   "Magnetic Orb",
   "Invisible Hands",
@@ -379,7 +379,7 @@ K.Spells = [
   "Animate Tunic",
   "Ursine Armor",
   "Holy Roller",
-  "Tonsilectomy",
+  "Tonsillectomy",
   "Curse Family",
   "Infinite Confusion"];
 
@@ -717,9 +717,9 @@ K.Monsters = [
   "Pentasaurus|12|head",
   "Stegosaurus|18|plate",
   "Triceratops|16|horn",
-  "Tyranosauraus Rex|18|forearm",
+  "Tyrannosaurus Rex|18|forearm",
   "Djinn|7|lamp",
-  "Doppleganger|4|face",
+  "Doppelganger|4|face",
   "Black Dragon|7|*",
   "Plaid Dragon|7|sporrin",
   "Blue Dragon|9|*",
@@ -788,7 +788,7 @@ K.Monsters = [
   "Hippocampus|4|mane",
   "Hippogriff|3|egg",
   "Hobgoblin|1|patella",
-  "Homonculus|2|fluid",
+  "Homunculus|2|fluid",
   "Hydra|8|gyrum",
   "Imp|2|tail",
   "Invisible Stalker|8|*",

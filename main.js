@@ -90,7 +90,7 @@ function Split(s, field, separator) {
 
 function Indefinite(s, qty) {
   if (qty == 1) {
-    if (Pos(s.charAt(0), 'AEIOUÜaeiouü') > 0)
+    if (Pos(s.charAt(0), 'AEIOUÃœaeiouÃ¼') > 0)
       return 'an ' + s;
     else
       return 'a ' + s;
@@ -156,13 +156,13 @@ function InterplotCinematic() {
       case 2: Q('task|2|You seem to gain the advantage over ' + nemesis); break;
       }
     }
-    Q('task|3|Victory! ' + nemesis + ' is slain! Exhausted, you lose conciousness');
+    Q('task|3|Victory! ' + nemesis + ' is slain! Exhausted, you lose consciousness');
     Q('task|2|You awake in a friendly place, but the road awaits');
     break;
   case 2:
     var nemesis2 = ImpressiveGuy();
     Q("task|2|Oh sweet relief! You've reached the kind protection of " + nemesis2);
-    Q('task|3|There is rejoicing, and an unnerving encouter with ' + nemesis2 + ' in private');
+    Q('task|3|There is rejoicing, and an unnerving encounter with ' + nemesis2 + ' in private');
     Q('task|2|You forget your ' + BoringItem() + ' and go back to get it');
     Q("task|2|What's this!? You overhear something shocking!");
     Q('task|2|Could ' + nemesis2 + ' be a dirty double-dealer?');
@@ -1195,7 +1195,7 @@ function FormKeyDown(e) {
     }
 
     if (e.key === 'g') {
-      Guildify(InputBox('Choose a guild.\n\nMake sure you undestand the guild rules before you join one. To learn more about guilds, visit http://progressquest.com/guilds.php\n', game.guild));
+      Guildify(InputBox('Choose a guild.\n\nMake sure you understand the guild rules before you join one. To learn more about guilds, visit http://progressquest.com/guilds.php\n', game.guild));
     }
 
     if (e.key === 'm') {

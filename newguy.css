@@ -18,7 +18,7 @@ fieldset {
 
 fieldset table {
   width: 100px;
-  border: none 0px black;
+  border: none 0 black;
   border-right: none !IMPORTANT;
   border-spacing: 10px;
   border-collapse: separate;

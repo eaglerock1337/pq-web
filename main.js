@@ -1104,21 +1104,12 @@ function LoadGame(sheet) {
 
   game = sheet;
 
-  /*
-  if (!window.localStorage) {
-    // Cookies can't hold a whole game save
-    storage.removeItem("roster");
-    storage = null;
-  }
-*/
-
   if (document) {
     var title = "Progress Quest - " + GameSaveName();
     $("#title").text(title);
     if (iOS) title = GameSaveName();
     document.title = title;
   }
-
 
   randseed(game.seed);
   $.each(AllBars.concat(AllLists), function (i, e) { e.load(game); });
@@ -1128,6 +1119,30 @@ function LoadGame(sheet) {
   $.each([Plots,Quests], function () {
     this.CheckAll(true);
   });
+
+  // Patch correctly spelled spells showing up as new spells when
+  // the incorretly spelled spell was there already.
+  function patch(from, to) {
+    function count(spell) {
+      let t = game.Spells.filter(a => a[0] == spell);
+      return t.length == 1 ? toArabic(t[0][1]) : 0;
+    }
+    let tf = count(from);
+    if (!tf) return;
+    let tt = count(to);
+    let total = tf + tt;
+    console.log('Patching ' + from + ' to ' + to);
+    game.Spells = game.Spells.filter(a => a[0] != to);
+    for (let spell of game.Spells) {
+      if (spell[0] == from) {
+        spell[0] = to;
+        spell[1] = toRoman(total);
+      }
+    }
+  }
+  patch('Innoculate', 'Inoculate');
+  patch('Tonsilectomy', 'Tonsillectomy');
+
   Log('Loaded game: ' + game.Traits.Name);
   if (!game.elapsed)
     Brag('s');

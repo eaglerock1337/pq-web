@@ -13,9 +13,15 @@
 
 .brag {
   display: inline-block;
+}
+.brag, #buttonline td {
   background-color: #ddddff;
   margin: 5px;
   border: solid 2px #ccccee;
+}
+.bragtable {
+  display: inline-block;
+  border-spacing: 20px;
 }
 .lit {
   border: solid 2px #66ccee;
@@ -49,6 +55,7 @@ p {
 #newc {
   text-align: center;
 }
+
 .brag a, .brag a:visited {
   color: blue;
   text-decoration: none;
@@ -77,11 +84,30 @@ a.save {
 img {
   border-style: none;
 }
-#dropinfo {
+.dropinfo {
   text-align: center;
   font-style: italic;
-  font-size: smaller;
+/*  font-size: smaller;*/
+  border: solid 1px #888;
+  width: 600px;
+  margin: auto;
   margin-bottom: 20px;
+  background-color: #f8f0ee;
+  border-radius: 0.3rem;
+}
+.dropinfo div {
+  margin: 20px;
+}
+label {
+  background-color: #f0f0f0;
+  color: #222;
+  padding: 2px 6px 2px 6px;
+  border: solid 1px #888;
+  font-family: -apple-system, Tahoma, Helvetica, sans-serif;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  font-style: normal;
+  font-size: 13.33333px;
 }
 </style>
 </head>
@@ -94,20 +120,30 @@ img {
 
 <h1>Character Roster</h1>
 
-<p id="roster" class="banter">
-</p>
+<p id="roster" class="banter"></p>
 
-<table class="brag">
-  <tr>
+<table class=bragtable>
+  <tr id=buttonline>
     <td id="newc">
       <b>New Character</b><br>
-      <img src="dicebar.jpg" alt="four dice"><br>
+      <img src="dicebar.jpg" alt="progress on dice pips"><br>
       <button id="roll">Roll One Up</button>
     </td>
   </tr>
 </table>
 
-<p id=dropinfo>You can also drop a saved game file on this page to add it to your roster.</p>
+
+<div class=dropinfo>
+<div>
+
+Your character data exists only in this browser and will disappear if the browser data is cleared.
+You can save a backup by clicking a character's <span style="font-style:normal">&#x1f4be;</span> icon.
+To load a saved game in this browser, drop a game save file onto this page, or use this button:
+</div><div>
+      <input id=pickup type=file accept=".pqw" multiple hidden></input>
+      <label id=uploader for=pickup>Load a Saved Game</label>
+</div>
+</div>
 
 <div align="center" id="nabar">
   <a href="/">Home</a> &middot;

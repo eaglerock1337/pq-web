@@ -81,7 +81,7 @@ th:first-child {
 
 #quit {
   float: right;
-  background: url(closedown.png);
+  background: url(../img/closedown.png);
   text-decoration: none;
   margin: 2px 2px 0 0;
   width: 16px;
@@ -95,14 +95,14 @@ th:first-child {
 .window { 
   background-color: #e7e7e7; 
   border: outset 2px silver;
-  padding: 2px;
+  padding: 2px;F
   text-align: left;
   display: inline-block;
 }
 
 
 body { 
-  background: url(back.jpg) no-repeat;
+  background: url(../img/back.jpg) no-repeat;
   background-size: 100% 100%;
   -webkit-background-size: 100% 100%;
   -o-background-size: 100% 100%;

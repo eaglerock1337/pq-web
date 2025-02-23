@@ -42,7 +42,7 @@ jobs:
           token: ${{ secrets.HLC_GITHUB_TOKEN }}
       - name: Get Old Version from Chart yaml
         id: old_sha
-        run: echo "sha_short=$(grep appVersion marks.dev/Chart.yaml | cut -f2 -d'"')" >> $GITHUB_OUTPUT
+        run: echo "sha_short=$(grep appVersion pq-web/Chart.yaml | cut -f2 -d'"')" >> $GITHUB_OUTPUT
       - name: Check old sha hash
         run: echo ${{ steps.old_sha.outputs.sha_short }}
       - name: Set Git Name

@@ -723,7 +723,14 @@ K.Specials = [
   "T-SQL",
   "SQL Server",
   "Hosted Service",
-  "Identity"];
+  "Identity",
+  "Stopwatch",
+  "Tablet",
+  "Switch",
+  "Router",
+  "Firewall",
+  "Codex",
+  "Source Code"];
 
 K.ItemAttrib = [
   "Golden",
@@ -812,12 +819,7 @@ K.ItemAttrib = [
   "Azure Cloud",
   "Managed",
   "Emotional Support",
-  "Service",
-  "Stopwatch",
-  "Tablet",
-  "Switch",
-  "Router",
-  "Firewall"];
+  "Service"];
 
 K.ItemOfs = [
   "Foreboding",
@@ -927,6 +929,8 @@ K.BoringItems = [
   "iPad",
   "broken LCD",
   "floppy",
+  "source code",
+  "code",
   "CD",
   "DVD",
   "Blu-Ray Disc",

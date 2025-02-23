@@ -9,7 +9,7 @@ function timeGetTime() {
 
 function StartTimer() {
   if (!clock) {
-    clock = new Worker('clock.js');
+    clock = new Worker('js/clock.js');
     clock.addEventListener('message', e => {
       Timer1Timer();
       clock.lasttick = timeGetTime();

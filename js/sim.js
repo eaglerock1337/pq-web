@@ -114,7 +114,7 @@ var setInterval  = global.setInterval = function (callback, interval) {
 };
 var setTimeout = global.setTimeout = setInterval;  // TODO: distinguish!
 
-load("config.js");
+load("js/config.js");
 
 var cs = 0;
 storage.loadRoster(function (cs) { for (var c in cs) cs++; });
@@ -125,7 +125,7 @@ var timeGetTime = global.timeGetTime = function () {
   return now;
 }
 
-load("main.js");
+load("js/main.js");
 FormCreate();
 
 function charsheet(game) {
@@ -147,7 +147,7 @@ for (var j = 1, t = 0; j < 1001; ++j) {
 var tmpl = read("charsheet.txt");
 storage.loadSheet(CHARACTER, function (sheet) {
   if (!sheet) {
-    load("newguy.js");
+    load("js/newguy.js");
     NewGuyFormLoad();
     traits.Name = CHARACTER;
     sold();

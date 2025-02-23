@@ -86,5 +86,10 @@ cheat("$$$", function () {
   });
 
   cheat("Quit", quit);
-
+  
+  cheat("RandomTask (for fun)", function () {
+	var result;
+	result = randomTask();
+    console.log(result);
+  });
 }

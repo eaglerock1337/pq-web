@@ -242,6 +242,11 @@ function MonsterTask(level) {
 
   var result = Split(monster,0);
   game.task = 'kill|' + monster;
+  
+//  //allow for multiple monster items' drops
+//  var items = Split(monster, 2, ",");
+//  var selectedItem = Pick(items);
+//  Add(Inventory, selectedItem, 1);
 
   var qty = 1;
   if (level-lev > 10) {
@@ -300,8 +305,17 @@ function Dequeue() {
       if (Split(game.task,3) == '*') {
         WinItem();
       } else if (Split(game.task,3)) {
-        Add(Inventory,LowerCase(Split(game.task,1) + ' ' +
-                                ProperCase(Split(game.task,3))),1);
+		//Handle monsters with multiple item drop possibilites //Fixed issue when encountering "*" from multi-choice-drop-possible mobs.
+		if (Split(game.task,3).indexOf(',') > -1) {
+			var mItem = Pick(Split(game.task,3).split(','))
+			if (mItem == '*') {
+				WinItem();
+			} else {
+				Add(Inventory,LowerCase(Split(game.task,1) + ' ' + ProperCase(mItem)),1);
+			}
+		} else {
+			Add(Inventory,LowerCase(Split(game.task,1) + ' ' + ProperCase(Split(game.task,3))),1);
+		}
       }
     } else if (game.task == 'buying') {
       // buy some equipment
@@ -358,6 +372,12 @@ function Dequeue() {
       nn = Math.floor((2 * InventoryLabelAlsoGameStyleTag * t.level * 1000) / nn);
       Task('Executing ' + t.description, nn);
     }
+	
+	// Advanced 3D Graphics!
+	generateHash(game).then(hash => {
+	  updateMandelbulb(hash);
+	});
+
   }
 }
 
@@ -447,7 +467,6 @@ function Key(tr) {
 function Value(tr) {
   return $(tr).children().last().text();
 }
-
 
 
 function ListBox(id, columns, fixedkeys) {
@@ -1461,3 +1480,17 @@ function Guildify(guild) {
     if (s) Navigate(s);
   });
 }
+
+// Function to generate a hash from the game state
+async function generateHash(game) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(game));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+// Example usage
+//generateHash(game).then(hash => {
+//  updateMandelbulb(hash);
+//});

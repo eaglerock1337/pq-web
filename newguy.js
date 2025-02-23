@@ -207,3 +207,57 @@ function GenClick() {
     $("#Name").attr("value", traits.Name);
 }
 
+function Maximize(preferredStat1, preferredStat2, maxTimeInSeconds = 5) {
+    var maxTotal = 108;
+    var startTime = Date.now();
+    var bestStats = null;
+    var bestTotal = 0;
+    var attempts = 0;
+
+    while ((Date.now() - startTime) < maxTimeInSeconds * 1000) {
+        RollEm();
+        attempts++;
+        var total = 0;
+
+        $.each(K.PrimeStats, function () {
+            total += stats[this];
+        });
+
+        if (stats[preferredStat1] === 18 && (!preferredStat2 || stats[preferredStat2] === 18)) {
+            if (total > bestTotal) {
+                bestTotal = total;
+                bestStats = { ...stats };
+            }
+        }
+
+        if (attempts % 10000 === 0) {
+            console.log("Attempt " + attempts + ": Total = " + total + ", Best Total = " + bestTotal);
+        }
+    }
+
+    if (bestStats) {
+        console.log("Best result with preferred stats achieved in " + attempts + " attempts.");
+        // Apply the best stats found
+        Object.assign(stats, bestStats);
+
+        // Update the DOM elements with the new stats
+        $.each(K.PrimeStats, function () {
+            $("#" + this).text(stats[this]);
+        });
+
+        var totalColor =
+            (bestTotal >= (63 + 18)) ? 'red' :
+            (bestTotal > (4 * 18)) ? 'yellow' :
+            (bestTotal <= (63 - 18)) ? 'grey' :
+            (bestTotal < (3 * 18)) ? 'silver' :
+            'white';
+
+        $("#Total").text(bestTotal);
+        $("#Total").css("background-color", totalColor);
+        $("#Unroll").attr("disabled", !seedHistory.length);
+    } else {
+        console.log("Preferred stats not achieved within " + maxTimeInSeconds + " seconds.");
+    }
+
+    return stats;
+}

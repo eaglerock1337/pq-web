@@ -16,7 +16,6 @@ thead.mid {
   background-color: white;
 }
 
-
 th { background-color: #eee; }
 
 .head {
@@ -57,7 +56,7 @@ div.progress-container:hover div.hint {
 }
 
 #main.window { 
-  width: 686px; 
+  width: 768px; 
 }
 
 body.bare #main.window {
@@ -81,17 +80,21 @@ so we need ours */
 #Trats, 
 #Plots,  #Plots table,
 #Quests, #Quests table { 
-  width: 200px;
+  width: 240px;
+}
+
+#Quests {
+  overflow: scroll;
 }
 
 #Izquierda, #Derecha {
   width: 202px;
 }
 
-#Spells       { width: 200px; }
-#Spells table { width: 184px; }
+#Spells       { width: 240px; }
+#Spells table { width: 225px; }
 
-#Trats th,             #Trats td             { width: 145px; }
+#Trats th,             #Trats td             { width: 170px; }
 #Trats th:first-child, #Trats td:first-child { width:  55px; }
 
 tr         { height:  15px; }
@@ -104,7 +107,7 @@ tr         { height:  15px; }
 #ExpBar, #ExpBar .hint, 
 #PlotBar, #PlotBar .hint,
 #QuestBar, #QuestBar .hint { 
-  width: 198px;
+  width: 238px;
 }
 
 #Equips {
@@ -115,7 +118,8 @@ tr         { height:  15px; }
 #Inventory table { width: 254px; }
 
 #Centro { 
-  width: 274px; 
+  width: 275px;
+  margin-left: 40px;
 }
 
 #Equips th,             #Equips td             { width: 202px; }
@@ -134,7 +138,7 @@ tr         { height:  15px; }
 }
 
 #TaskBar, #TaskBar .hint { 
-  width: 680px;
+  width: 763px;
 }
 
 #Quests td, #Plots td { 

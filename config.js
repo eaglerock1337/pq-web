@@ -315,6 +315,127 @@ let RevString = '&rev=6';
 // rev=5 is pq6.3 presumably the lazarus port or other unofficial release
 // rev=6 is this here, pq-web multiplayer enabled
 
+
+function getPlayerLevel() {
+	return GetI(Traits,'Level')
+}
+
+
+function fastInverseSqrt(number) {
+    var i = new Float32Array(1);
+    var y = new Float32Array(1);
+    const threehalfs = 1.5;
+
+    var x2 = number * 0.5;
+    y[0] = number;
+    i = new Int32Array(y.buffer);        // evil floating point bit level hacking
+    i[0] = 0x5f3759df - (i[0] >> 1);     // what the fuck?
+    y = new Float32Array(i.buffer);
+    y[0] = y[0] * (threehalfs - (x2 * y[0] * y[0]));    // 1st iteration
+    // y[0] = y[0] * (threehalfs - (x2 * y[0] * y[0])); // 2nd iteration, this can be removed
+
+    return y[0];
+}
+
+
+function doPointlessMath(min, max, count) {
+    let results = [];
+    let totalCount = 0;
+    while (results.length < count) {
+        let randomValue = Math.random();
+        let inverseSqrtValue = fastInverseSqrt(randomValue);
+        totalCount++;
+        //console.log("Fast Inverse Square Root of " + randomValue + " is " + inverseSqrtValue);
+        if (inverseSqrtValue >= min && inverseSqrtValue <= max) {
+            results.push(inverseSqrtValue);
+        }
+    }
+    console.log("Total number of FISR iterations run to return values within desired range: " + totalCount);
+    
+    // Sort the values.
+    results.sort((a, b) => a - b);
+	//console.log(results)
+
+    // Calculate the average of the top 99%
+    let top99PercentIndex = Math.floor(results.length * 0.99);
+    let top99PercentValues = results.slice(top99PercentIndex);
+    console.log("Top 99% of values: " + top99PercentValues);
+    let averageTop99Percent = top99PercentValues.reduce((sum, value) => sum + value, 0) / top99PercentValues.length;
+
+    // Calculate the average of the bottom 1%
+    let bottom1PercentIndex = Math.ceil(results.length * 0.01);
+    let bottom1PercentValues = results.slice(0, bottom1PercentIndex);
+    console.log("Bottom 1% of values: " + bottom1PercentValues);
+    let averageBottom1Percent = bottom1PercentValues.reduce((sum, value) => sum + value, 0) / bottom1PercentValues.length;
+
+    console.log("Average of the top 99% of values: " + averageTop99Percent);
+    console.log("Average of the bottom 1% of values: " + averageBottom1Percent);
+
+    console.log("Generating choices...");
+    // Method 1: Average of valid values
+    let averageValidValue = results.reduce((sum, value) => sum + value, 0) / results.length;
+	console.log("Average Value: " + averageValidValue);
+
+    // Method 2: Random selection
+    let randomIndex = Math.floor(Math.random() * results.length);
+    let randomSelection = results[randomIndex];
+	console.log("Random Selection: " + randomSelection);
+
+    // Method 3: Median value
+    let medianValue = results[Math.floor(results.length / 2)];
+	console.log("Median Value: " + medianValue);
+
+    // Method 4: Weighted average
+    let weightedAverage = (averageTop99Percent * 0.99) + (averageBottom1Percent * 0.15);
+    console.log("Weighted Average: " + weightedAverage);
+
+    // Method 5: Custom Formula
+    let customValue = ((averageTop99Percent / Math.PI) + (averageBottom1Percent * Math.PI) + (Math.random() + 1));
+	console.log("Custom Formula: " + customValue);
+
+    // Randomly choose one of the methods
+	console.log("Randomly selecting 1 of the 5 values...");
+    let methods = [averageValidValue, randomSelection, medianValue, weightedAverage, customValue];
+    let finalValue = methods[Math.floor(Math.random() * methods.length)];
+    console.log("Final dice roll value: " + finalValue);
+
+    return finalValue;
+;}
+
+
+function setTemporaryGameSpeed() {
+	var result = 2;
+	var cooldownDuration = 300000;
+    if (getPlayerLevel() >= 10) {
+        let result = doPointlessMath(1.5, 20, 1000);
+        setGameSpeed(result);
+        // Disable the button
+        turboButton.disabled = true;
+        turboButton.style.backgroundColor = 'grey';
+
+        // Reset game speed after boost duration
+        setTimeout(() => {
+            setGameSpeed(1); // Reset to normal speed after the boost duration
+        }, 60000);
+
+        // Determine cooldown duration
+        let cooldownDuration = 300000; // Default to 5 minutes
+        if (result < 2) {
+            cooldownDuration = 60000; // Set to 1 minute if boost is less than 2x
+        }
+
+        // Re-enable the button after disable duration
+        setTimeout(() => {
+            turboButton.disabled = false;
+            turboButton.style.backgroundColor = '';
+            console.log("Speed Boost Re-Enabled.");
+        }, cooldownDuration);
+    } else {
+        console.log("Player level less than 10. Boost not permitted.");
+    }
+}
+
+
 var K = {};
 
 K.Traits = ["Name", "Race", "Class", "Level"];
@@ -322,36 +443,59 @@ K.Traits = ["Name", "Race", "Class", "Level"];
 K.PrimeStats = ["STR","CON","DEX","INT","WIS","CHA"];
 K.Stats = K.PrimeStats.slice(0).concat(["HP Max","MP Max"]);
 
-K.Equips = ["Weapon",
-            "Shield",
-            "Helm",
-            "Hauberk",
-            "Brassairts",
-            "Vambraces",
-            "Gauntlets",
-            "Gambeson",
-            "Cuisses",
-            "Greaves",
-            "Sollerets"];
+K.Verbs = [
+  "Acquire",
+  "Obtain",
+  "Collect",
+  "Retrieve", 
+  "Secure"];
+
+K.Equips = [
+  "Weapon",
+  "Shield",
+  "Helm",
+  "Hauberk",
+  "Brassairts",
+  "Vambraces",
+  "Gauntlets",
+  "Gambeson",
+  "Cuisses",
+  "Greaves",
+  "Sollerets"];
 
 K.Spells = [
   "Slime Finger",
   "Rabbit Punch",
   "Hastiness",
+  "IT Ticket",
+  "Phone Call",
+  "Video Call",
+  "Tele-Conference",
+  "Teams Meeting",
   "Good Move",
   "Sadness",
+  "Password Reset",
   "Seasick",
+  "MFA",
+  "Revoke Session",
   "Shoelaces",
   "Inoculate",
   "Cone of Annoyance",
+  "Remote Access",
   "Magnetic Orb",
   "Invisible Hands",
   "Revolting Cloud",
   "Aqueous Humor",
+  "Message-Trace",
+  "Restore Backup",
+  "Root Cause Analysis",
+  "Business Intelligence",
   "Spectral Miasma",
   "Clever Fellow",
+  "Sharp Tongue",
   "Lockjaw",
   "History Lesson",
+  "Release from Quarantine",
   "Hydrophobia",
   "Big Sister",
   "Cone of Paste",
@@ -359,15 +503,20 @@ K.Spells = [
   "Nestor's Bright Idea",
   "Holy Batpole",
   "Tumor (Benign)",
+  "PTO",
+  "Upward Mobility",
   "Braingate",
   "Summon a Bitch",
   "Nonplus",
   "Animate Nightstand",
   "Eye of the Troglodyte",
+  "Corporate Retraining",
   "Curse Name",
+  "Darktrace",
   "Dropsy",
   "Vitreous Humor",
   "Roger's Grand Illusion",
+  "Phishing Simulation",
   "Covet",
   "Black Idaho",
   "Astral Miasma",
@@ -376,12 +525,16 @@ K.Spells = [
   "Angioplasty",
   "Grognor's Big Day Off",
   "Tumor (Malignant)",
+  "Ni!",
   "Animate Tunic",
   "Ursine Armor",
   "Holy Roller",
   "Tonsillectomy",
   "Curse Family",
-  "Infinite Confusion"];
+  "Corporate Espionage",
+  "Infinite Confusion",
+  "Release the Kraken",
+  "French Taunting"];
 
 K.OffenseAttrib = [
   "Polished|+1",
@@ -512,12 +665,21 @@ K.Specials = [
   "Amethyst",
   "Candelabra",
   "Corset",
+  "Corde",
+  "Lasso",
+  "Indy's Whip™",
+  "Holy Grail",
   "Sphere",
   "Sceptre",
   "Ankh",
   "Talisman",
   "Orb",
   "Gammel",
+  "Gavel",
+  "ULINE Quiet Tape™",
+  "Pantaloons",
+  "Portable Toilet",
+  "Mop Bucket",
   "Ornament",
   "Brocade",
   "Galoon",
@@ -525,7 +687,43 @@ K.Specials = [
   "Spangle",
   "Gimcrack",
   "Hood",
-  "Vulpeculum"];
+  "Vulpeculum",
+  "Report",
+  "Stock Certificate",
+  "Profits",
+  "Quarterly Analysis",
+  "License",
+  "S.O.W.",
+  "N.D.A.",
+  "Laptop",
+  "Server",
+  "Headset",
+  "Monitor",
+  "Printer",
+  "Docking Station",
+  "iFixit Toolkit",
+  "Webcam",
+  "Projector",
+  "Flash Drive",
+  "Hard Drive",
+  "SSD",
+  "BitLocker",
+  "Universal Receiver",
+  "Universal Transmitter",
+  "Wireless Mouse",
+  "Wireless Keyboard",
+  "Wireless Keyboard & Mouse Combo",
+  "Bluetooth Peripheral",
+  "Indy's Refrigerator™",
+  "GPU",
+  "CPU",
+  "PSU",
+  "OLED",
+  "Quarantined Email",
+  "T-SQL",
+  "SQL Server",
+  "Hosted Service",
+  "Identity"];
 
 K.ItemAttrib = [
   "Golden",
@@ -540,6 +738,8 @@ K.ItemAttrib = [
   "Cruciate",
   "Arcane",
   "Blessed",
+  "Bewitched",
+  "Bewitching",
   "Reverential",
   "Lucky",
   "Enchanted",
@@ -558,9 +758,66 @@ K.ItemAttrib = [
   "Benevolent",
   "Unearthly",
   "Magnificent",
+  "Copper",
+  "Tin",
+  "Nickel",
+  "Bronze",
   "Iron",
+  "Silver",
+  "Gold",
+  "Diamond",
+  "Platinum",
+  "Titanium",
+  "Fel",
+  "Thorium",
+  "Adamantite",
+  "Saronite",
+  "Adamantium",
+  "Vibranium",
+  "Unobtanium",
+  "Mithril",
+  "Kryptonian",
+  "Kryptonite",
+  "Nth Metal",
+  "Element X",
+  "Promethium",
+  "Dionesium",
   "Ormolu",
-  "Puissant"];
+  "Morgul",
+  "Puissant",
+  "Double Holy",
+  "Cyber",
+  "Cybernetic",
+  "Trend-Setting",
+  "1337",
+  "Renowned",
+  "Electronic",
+  "3D Printed",
+  "Prismatic",
+  "Gold-Plated",
+  "Nickel-Plated",
+  "Pearlescent",
+  "Iridescent",
+  "Luminescent",
+  "Opalescent",
+  "Opulent",
+  "Corpulent",
+  "Antique",
+  "Nuclear",
+  "Atomic",
+  "Sub-Atomic",
+  "Infinity",
+  "Fiber-Optic",
+  "Self-Hosted",
+  "Azure Cloud",
+  "Managed",
+  "Emotional Support",
+  "Service",
+  "Stopwatch",
+  "Tablet",
+  "Switch",
+  "Router",
+  "Firewall"];
 
 K.ItemOfs = [
   "Foreboding",
@@ -576,6 +833,7 @@ K.ItemOfs = [
   "Pleasure",
   "Practicality",
   "Hurting",
+  "Bewitching",
   "Joy",
   "Petulance",
   "Intrusion",
@@ -601,6 +859,7 @@ K.ItemOfs = [
   "Guile",
   "Prurience",
   "Fortune",
+  "Judgement",
   "Perspicacity",
   "Domination",
   "Submission",
@@ -611,16 +870,66 @@ K.ItemOfs = [
   "Grob",
   "Dignard",
   "Ra",
+  "Krypton",
+  "Lazarus",
+  "Class",
   "the Bone",
+  "the Shire",
+  "the unspoken",
+  "He who remains",
+  "He who shall not be named",
+  "Númenór",
+  "the First Age",
+  "the Second Age",
+  "the Third Age",
+  "Nuclear Protection",
+  "Radiation",
+  "Olde",
+  "Antiquity",
   "Diamonique",
   "Electrum",
-  "Hydragyrum"];
+  "Hydragyrum",
+  "Pearlescense",
+  "Iridescense",
+  "Luminescense",
+  "Opalescense",
+  "Opulence",
+  "Corpulence",
+  "the Cloud",
+  "Emotional Damage",
+  "Emotional Support"];
 
 K.BoringItems = [
+  "tape",
   "nail",
   "lunchpail",
   "sock",
+  "token",
+  "review",
+  "Canned Air",
   "I.O.U.",
+  "wire",
+  "keyboard",
+  "mouse",
+  "keyboard & mouse combo",
+  "TPS Report",
+  "email",
+  "document",
+  "spreadsheet",
+  "PowerPoint",
+  "PDF",
+  "envelope",
+  "dongle",
+  "phone",
+  "Android",
+  "tablet",
+  "iPhone",
+  "iPad",
+  "broken LCD",
+  "floppy",
+  "CD",
+  "DVD",
+  "Blu-Ray Disc",
   "cookie",
   "pint",
   "toothpick",
@@ -658,7 +967,14 @@ K.BoringItems = [
   "nosegay",
   "trinket",
   "credenza",
-  "writ"];
+  "website",
+  "writ",
+  "modem",
+  "account",
+  "hdmi cable",
+  "clock",
+  "smart watch",
+  "chromebook"];
 
 K.Monsters = [
   "Anhkheg|6|chitin",
@@ -850,6 +1166,7 @@ K.Monsters = [
   "Shedu|9|hoof",
   "Shrieker|3|stalk",
   "Skeleton|1|clavicle",
+  "Under-Skeleton|10|pelvis",
   "Spectre|7|vestige",
   "Sphinx|10|paw",
   "Spider|0|web",
@@ -892,7 +1209,39 @@ K.Monsters = [
   "Moakum|8|frenum",
   "Fly|0|*",
   "Hogbird|3|curl",
-  "Wolog|4|lemma"];
+  "Wolog|4|lemma",
+  "New-Hire Orientation|0|*",
+  "Mandatory Training|1|certificate",
+  "3D Print|3|residue",
+  "Rogue Phishing Simulation|9|spam",
+  "Rogue AI|15|neural-net",
+  "Competing Business|8|customers",
+  "Corporation|20|market share",
+  "Terminated Employee|5|security badge",
+  "Nagging Support Issue|7|documentation",
+  "Junk Mail|1|ticket",
+  "Spam|4|ticket",
+  "Phishing Attack|10|remidiation",
+  "Cyber-Attack|20|cyber points",
+  "Service Advisory|5|notification",
+  "Outage|10|resolution",
+  "On-Call Rotation|6|Comp Day",
+  "Scrub|1|chaff",
+  "Sony® Trinitron™|8|vaccuum tube",
+  "Audit|7|certification",
+  "Access Request|1|closed ticket",
+  "SOX Audit|20|Compliance Report",
+  "Phishing Victim|3|Cybersecurity Training",
+  "Virtual Happy Hour|15|time you won't get back",
+  "Team Building Exercise|7|lowered faith in humanity",
+  "Script Kiddie|4|Dorito Dust",
+  "Company Christmas Party|0|compromising selfie",
+  "Dish Monster|5|soap suds",
+  "Cabling Rat's Nest|2|copper wire",
+  "Credential|4|session hash",
+  "Compromised Account|6|PII Data",
+  "TCB Phising Message|7|support ticket",
+  "Password Spray Attack|9|IP Address List"];
 
 K.MonMods = [
   "-4 fœtal *",
@@ -951,6 +1300,7 @@ K.Races = [
   "Gyrognome|DEX",
   "Lesser Dwarf|CON",
   "Crested Dwarf|CHA",
+  "Corporate Underling|CON",
   "Eel Man|DEX",
   "Panda Man|CON,STR",
   "Trans-Kobold|WIS",
@@ -960,7 +1310,9 @@ K.Races = [
   "Double Wookiee|STR",
   "Skraeling|WIS",
   "Demicanadian|CON",
-  "Land Squid|STR,HP Max"];
+  "Land Squid|STR,HP Max",
+  "Were-Mermaid|CHA,INT",
+  "Rock Monster|CON,HP Max"];
 
 K.Klasses = [
   "Ur-Paladin|WIS,CON",
@@ -980,9 +1332,16 @@ K.Klasses = [
   "Bastard Lunatic|CON",
   "Lowling|WIS",
   "Birdrider|WIS",
-  "Vermineer|INT"];
+  "Vermineer|INT",
+  "Standard Nerd|STR,WIS",
+  "Mohawk|STR,DEX",
+  "Kraken Hunter|HP Max,MP Max",
+  "Gingerbread Maker|CON,HP Max",
+  "IT Guy|CON,WIS",
+  "Stonewarden|STR,CON"];
 
 K.Titles = [
+  "Chud",
   "Mr.",
   "Mrs.",
   "Sir",
@@ -990,7 +1349,14 @@ K.Titles = [
   "Ms.",
   "Captain",
   "Chief",
+  "Officer",
+  "Esq.",
+  "Supervisor",
+  "Manager",
+  "Padre",
+  "Pastor",
   "Admiral",
+  "Monsignor",
   "Saint"];
 
 K.ImpressiveTitles = [
@@ -1007,5 +1373,17 @@ K.ImpressiveTitles = [
   "Archbishop",
   "Chancellor",
   "Baroness",
-  "Inquistor"];
+  "Inquistor",
+  "Director",
+  "Executive",
+  "Vice-President",
+  "President",
+  "Owner",
+  "Founder"];
 
+K.KlassTitles = [
+   "High",
+   "Low",
+   "Grand",
+   "Exhalted",
+   "Exiled"];

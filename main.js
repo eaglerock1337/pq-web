@@ -655,6 +655,30 @@ function BoringItem() {
   return Pick(K.BoringItems);
 }
 
+function randomTask() {
+    var result;
+    var verb = Pick(K.Verbs);
+
+    var itemType = Random(2) === 0 ? 'Definite' : 'Indefinite';
+    var firstItem = Random(2) === 0 ? 'BoringItem' : 'InterestingItem';
+    var secondItem = firstItem === 'InterestingItem' ? (Random(2) === 0 ? 'InterestingItem' : 'SpecialItem') : 'SpecialItem';
+
+    var itemFunction = itemType === 'Definite' ? Definite : Indefinite;
+    var firstItemFunction = firstItem === 'BoringItem' ? BoringItem : InterestingItem;
+    var secondItemFunction = secondItem === 'InterestingItem' ? InterestingItem : SpecialItem;
+
+    var quantity = itemType === 'Definite' ? Random(2) + 1 : Random(12) + 1;
+
+    var target = Random(2) === 0 ? K.Races : K.Monsters;
+
+    var preposition1 = Random(2) === 0 ? 'of' : 'from';
+    var preposition2 = Random(2) === 0 ? 'of' : 'from';
+
+    result = verb + ' ' + itemFunction(ProperCase(firstItemFunction()), quantity) + ' ' + preposition1 + ' the ' + secondItemFunction() + ' ' + preposition2 + ' ' + Pick(K.ImpressiveTitles) + ' ' + GenerateName() + ', ' + Pick(K.KlassTitles) + ' ' + Split(Pick(K.Klasses), 0) + ' of the ' + Plural(Split(Pick(target), 0));
+
+    return result;
+}
+
 function WinItem() {
   if (Max(250, Random(999)) < Inventory.length()) {
     Add(Inventory, Pick(Inventory.rows()).firstChild.innerText, 1);
@@ -675,7 +699,7 @@ function CompleteQuest() {
 
   game.questmonster = '';
   var caption;
-  switch (Random(5)) {
+  switch (Random(18)) {
   case 0:
     var level = GetI(Traits,'Level');
     var lev = 0;
@@ -715,6 +739,58 @@ function CompleteQuest() {
     caption = 'Placate ' + Definite(Split(game.questmonster,0),2);
     game.questmonster = '';  // We're trying to placate them, after all
     break;
+  case 5:
+    caption = 'Restore ' + Definite(InterestingItem(), 2);
+    break;
+  case 6:
+    caption = 'Repair these ' + Indefinite(BoringItem(), 3);
+    break;
+  case 7:
+    caption = 'Upgrade ' + Definite(InterestingItem(), 1);
+    break;
+  case 8:
+    caption = 'Decommision ' + Indefinite(InterestingItem(), 1);
+    break;
+  case 9:
+    caption = 'Sign for delivery of ' + Indefinite(BoringItem(), (Random(42) + 1));
+    break;
+  case 10:
+    caption = 'Ship out ' + Indefinite(BoringItem(), (Random(20) + 1));
+    break;
+  case 11:
+    caption = 'Recover the CEO\'s ' + InterestingItem();
+    break;
+  case 12:
+    caption = 'Assist the Executive with ' + Indefinite(InterestingItem(), (Random(2) + 1));
+    break;
+  case 13:
+    var mlev = 0;
+    level = GetI(Traits,'Level');
+    for (var ii = 1; ii <= 2; ++ii) {
+      montag = Random(K.Monsters.length);
+      m = K.Monsters[montag];
+      l = StrToInt(Split(m,1));
+      if ((ii == 1) || (Abs(l - level) < Abs(mlev - level))) {
+        mlev = l;
+        game.questmonster = m;
+      }
+    }
+    caption = 'Resolve tickets about ' + Definite(Split(game.questmonster,0),2);
+    game.questmonster = '';  // We're trying to placate them, after all
+    break;
+  case 14:
+    caption = 'Implement a policy for ' + Definite(SpecialItem(), 1);
+    break;
+  case 15:
+    caption = 'Find replacement parts for ' + Definite(SpecialItem(), 1);
+    break;
+  case 16:
+    caption = 'Purchase ' + Indefinite(BoringItem(), (Random(100) + 1));
+    break;
+  case 17:
+    caption = randomTask();
+    break;
+
   }
   if (!game.Quests) game.Quests = [];
   while (game.Quests.length > 99) game.Quests.shift();
@@ -881,6 +957,19 @@ function LevelUp() {
   WinSpell();
   ExpBar.reset(LevelUpTime(GetI(Traits,'Level')));
   Brag('l');
+  
+  if (getPlayerLevel() >= 10) {
+	turboEnabledCaption.style.display = "inline-block"
+	turboDisabledCaption.style.display = "none"
+	turboButton.disabled = false;
+	turboButton.style.backgroundColor = '';
+  } else {
+	turboButton.disabled = true;
+	turboButton.style.backgroundColor = 'grey';
+	turboEnabledCaption.style.display = "none"
+	turboDisabledCaption.style.display = "inline-block"
+
+  }
 }
 
 function ClearAllSelections() {
@@ -902,6 +991,13 @@ function Pos(needle, haystack) {
 }
 
 var dealing = false;
+
+var gameSpeedMultiplier = 1; // Default speed multiplier
+
+function setGameSpeed(multiplier) {
+    gameSpeedMultiplier = multiplier;
+    console.log("Game speed set to " + gameSpeedMultiplier);
+}
 
 function Timer1Timer() {
   if (TaskBar.done()) {
@@ -941,8 +1037,8 @@ function Timer1Timer() {
 
     Dequeue();
   } else {
-    var elapsed = timeGetTime() - clock.lasttick;
-    if (elapsed > 100) elapsed = 100;
+    var elapsed = (timeGetTime() - clock.lasttick) * gameSpeedMultiplier;
+    if (elapsed > 1000) elapsed = 1000;
     if (elapsed < 0) elapsed = 0;
     TaskBar.increment(elapsed);
   }
@@ -1147,6 +1243,19 @@ function LoadGame(sheet) {
   if (!game.elapsed)
     Brag('s');
   StartTimer();
+
+// handle turbo button
+  if (getPlayerLevel() >= 10) {
+	turboEnabledCaption.style.display = "inline-block"
+	turboDisabledCaption.style.display = "none"
+	turboButton.disabled = false;
+	turboButton.style.backgroundColor = '';
+  } else {
+	turboButton.disabled = true;
+	turboButton.style.backgroundColor = 'grey';
+	turboEnabledCaption.style.display = "none"
+	turboDisabledCaption.style.display = "inline-block"
+  }  
 }
 
 function GameSaveName() {

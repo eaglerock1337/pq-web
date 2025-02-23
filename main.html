@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<link rel="shortcut icon" type="image/x-icon" href="http://progressquest.com/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="./favicon.ico">
 <link rel="stylesheet" href="progros.css" type="text/css">
 <link rel="stylesheet" href="main.css" type="text/css">
 <title>Progress Quest</title>
-<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
 
 <meta name="viewport"
       content="initial-scale=1.0,
@@ -33,6 +33,7 @@
 <script src="jquery-3.6.0.js"></script>
 <script src="config.js"></script>
 <script src="main.js"></script>
+<script src="cheat.js"></script>
 
 <div class="hbox">
   <div class="vbox" id="Izquierda">
@@ -185,6 +186,18 @@
 </div>
 
 </div>
+
+<div><button id="fast-inverse-sqrt-button">TURBO</button></div>
+<div id="turbo-enabled-caption"><span style="color: white;">Roll for a possible 60s Speed Boost with a 5 Minute Cooldown.<br />If the boost is lower than 2x, the cooldown is only 60s.</span></div>
+<div id="turbo-disabled-caption"><span style="color: white;">Available at level 10.</span></div><br />
+<script>const turboButton = document.getElementById('fast-inverse-sqrt-button');
+const turboEnabledCaption = document.getElementById('turbo-enabled-caption');
+const turboDisabledCaption = document.getElementById('turbo-disabled-caption');
+turboButton.addEventListener('click', () => {
+    setTemporaryGameSpeed(); // Set the game speed multiplier
+});
+</script>
+
 
 <div id=bsodmom>
 <div id=bsod>

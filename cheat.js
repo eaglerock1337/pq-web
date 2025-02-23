@@ -8,27 +8,26 @@ function Cheats() {
       click: effect}).appendTo('body');
   }
 
-  cheat("Task", function () {
+  cheat("Complete Task", function () {
     TaskBar.reposition(TaskBar.Max());
   });
 
-  cheat("Level", function () {
+  cheat("LevelUp", function () {
     LevelUp();
   });
 
-  cheat("Quest", function () {
+  cheat("Adv Quest", function () {
     QuestBar.reposition(QuestBar.Max());
     TaskBar.reposition(TaskBar.Max());
   });
 
-  cheat("Plot", function () {
+  cheat("Adv Plot", function () {
     PlotBar.reposition(PlotBar.Max());
     TaskBar.reposition(TaskBar.Max());
   });
 
-
   cheat("Pause", function () {
-    if (timerid) {
+    if (clock && clock.running) {
       StopTimer();
     } else {
       StartTimer();
@@ -42,26 +41,44 @@ function Cheats() {
     WinEquip();
   });
 
-  cheat("Item", function () {
+  cheat("+Item", function () {
     WinItem();
   });
 
-  cheat("Clear items", function () {
+  cheat("Clear Inv", function () {
     while (Inventory.length() > 1)
       Inventory.remove1();
   });
 
-  cheat("Spell", function () {
+// New Speed button
+    cheat("Game Speed", function () {
+        var newSpeed = prompt("Enter new game speed multiplier:", gameSpeedMultiplier);
+        if (newSpeed !== null) {
+            setGameSpeed(parseFloat(newSpeed));
+        }
+    });
+
+  cheat("+Spell", function () {
     WinSpell();
   });
 
-  cheat("Stat", function () {
+  cheat("+Stat", function () {
     WinStat();
   });
 
-  cheat("$$$", function () {
-    Add(Inventory,'Gold',Random(100));
-  });
+cheat("$$$", function () {
+  let currentGold = GetI(Inventory, 'Gold');
+  let additionalGold;
+
+  if (currentGold <= 100) {
+    additionalGold = 100;
+  } else {
+	additionalGold = Math.floor(100 * Math.pow(1.05, currentGold / 100));
+  }
+
+  Add(Inventory, 'Gold', additionalGold);
+});
+
 
   cheat("Save", function () {
     SaveGame();
@@ -71,4 +88,3 @@ function Cheats() {
   cheat("Quit", quit);
 
 }
-

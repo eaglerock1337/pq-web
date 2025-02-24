@@ -89,7 +89,7 @@ cheat("$$$", function () {
   
   cheat("RandomTask (for fun)", function () {
 	var result;
-	result = randomTask();
+	result = Random(2) === 0 ? randomTask() : diplomaticMission();
     console.log(result);
   });
 }

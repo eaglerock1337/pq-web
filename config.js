@@ -157,6 +157,270 @@ function GenerateName() {
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
+/*//-- we have a pick function already...  Is this one better??
+// Utility function to pick a random element from an array
+function Pick(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+*/
+
+// Pronounceability check function
+function isPronounceable(part) {
+  let vowels = 'aeiou';
+  let maxConsonants = 2;
+  let maxVowels = 3;
+  let consonantCount = 0;
+  let vowelCount = 0;
+
+  for (let char of part.toLowerCase()) {
+    if (vowels.includes(char)) {
+      vowelCount++;
+      consonantCount = 0;
+      if (vowelCount > maxVowels) return false;
+    } else {
+      consonantCount++;
+      vowelCount = 0;
+      if (consonantCount > maxConsonants) return false;
+    }
+  }
+  return true;
+}
+
+// Prefixes (locPrefixesSets)
+// These are the starting elements, often suggesting natural features, colors, or evocative imagery.
+// Define multiple sets of name parts for increased randomness
+
+//Focuses on natural and elemental themes (rivers, dusk, flames).
+var locPrefixesSet1 = [
+  'Riv', 'Mor', 'Storm', 'Azer', 'El', 'Thal', 'Dun', 'Fal', 'Gor', 'Hel', 
+  'Dusk', 'Dawn', 'Tide', 'Wave', 'Frost', 'Flame', 'Ash', 'Oak', 'Pine', 'Hawk'
+];
+
+//Adds a mystical or rugged feel (mist, rift, rune).
+var locPrefixesSet2 = [
+  'Kar', 'Lor', 'Nor', 'Quel', 'Sil', 'Tal', 'Val', 'Zul', 'Bast', 'Eld', 
+  'Mist', 'Shade', 'Glim', 'Rift', 'Crag', 'Peak', 'Soot', 'Coal', 'Jade', 'Rune'
+];
+
+//Emphasizes colors and metals, common in fantasy naming.
+var locPrefixesSet3 = [
+  'Bright', 'Dark', 'Frost', 'Shadow', 'Iron', 'Gold', 'Silver', 'Bronze', 'Sun', 'Moon', 
+  'Star', 'Sky', 'Red', 'Blue', 'Green', 'White', 'Black', 'Stone', 'Wind', 'Thunder'
+];
+var locPrefixesSets = [locPrefixesSet1, locPrefixesSet2, locPrefixesSet3];
+
+// Middles (locMiddlesSets)
+// These connect prefixes and suffixes, adding rhythm and flavor.
+
+//Short, flowing sounds for a light touch (e.g., "en", "wyn").
+var locMiddlesSet1 = [
+  'en', 'or', 'ar', 'ir', 'ur', 'an', 'in', 'on', 'un', 'el', 
+  'ys', 'eth', 'wyn', 'ra', 'la', 'ma', 'na', 'si', 'ti', 'vo'
+];
+
+//Slightly sharper or melodic connectors (e.g., "il", "ai").
+var locMiddlesSet2 = [
+  'il', 'ol', 'ul', 'al', 'er', 'ath', 'eth', 'ith', 'oth', 'uth', 
+  'es', 'is', 'os', 'us', 'ai', 'ei', 'oi', 'ui', 'ka', 'ta'
+];
+
+//Longer, grounded endings (e.g., "and", "ern").
+var locMiddlesSet3 = [
+  'and', 'end', 'ind', 'ond', 'und', 'ald', 'eld', 'ild', 'old', 'uld', 
+  'ern', 'orn', 'irn', 'urn', 'ant', 'ent', 'int', 'ont', 'unt', 'ard'
+];
+var locMiddlesSets = [locMiddlesSet1, locMiddlesSet2, locMiddlesSet3];
+
+// Suffixes (locSuffixesSets)
+// These are the endings, often denoting geographic or settlement types.
+
+//Mix of settlements and serene landscapes (e.g., "heim", "lake").
+var locSuffixesSet1 = [
+  'dell', 'dor', 'wind', 'roth', 'heim', 'gard', 'hold', 'shire', 'wood', 'land', 
+  'crown', 'veil', 'mere', 'lake', 'ford', 'hill', 'ridge', 'glen', 'vale', 'moor'
+];
+
+//Defensive or rugged features (e.g., "keep", "crag").
+var locSuffixesSet2 = [
+  'mere', 'vale', 'hollow', 'keep', 'fort', 'gate', 'peak', 'stone', 'watch', 'cliff', 
+  'crag', 'bluff', 'pass', 'reach', 'run', 'spring', 'brook', 'fen', 'marsh', 'grove'
+];
+
+//Open or coastal areas (e.g., "bay", "steppe").
+var locSuffixesSet3 = [
+  'ridge', 'field', 'grove', 'haven', 'march', 'pass', 'reach', 'rest', 'rock', 'run', 
+  'bay', 'cove', 'isle', 'point', 'sand', 'dune', 'plain', 'mead', 'steppe', 'rift'
+];
+var locSuffixesSets = [locSuffixesSet1, locSuffixesSet2, locSuffixesSet3];
+
+// Expanded Culture-Specific Arrays
+
+// Elvish (Graceful, Melodic) Light, flowing, and ethereal.
+var elvishPrefixes = [
+  'El', 'Lor', 'Mor', 'Sil', 'Tel', 'Ael', 'Fae', 'Vyn', 'Lun', 'Syl', 
+  'Ere', 'Ith', 'Ara', 'Cele', 'Nim'
+];
+var elvishMiddles = [
+  'en', 'ith', 'ar', 'el', 'yn', 'ae', 'ir', 'is', 'ora', 'eth', 
+  'ia', 'la', 'ri', 'va', 'me'
+];
+var elvishSuffixes = [
+  'dell', 'nor', 'iel', 'wyn', 'thar', 'lith', 'dor', 'viel', 'syl', 'eth', 
+  'ara', 'ien', 'mir', 'las', 'ren'
+];
+
+// Dwarvish (Harsh, Sturdy) Rough, solid, and industrious
+var dwarvishPrefixes = [
+  'Dun', 'Kar', 'Gor', 'Hel', 'Tor', 'Dru', 'Bar', 'Thrum', 'Kor', 'Gar', 
+  'Urk', 'Bor', 'Dwar', 'Grim', 'Ston'
+];
+var dwarvishMiddles = [
+  'ad', 'um', 'or', 'ak', 'un', 'od', 'ur', 'ag', 'ol', 'am', 
+  'en', 'ir', 'ok', 'ug', 'ud'
+];
+var dwarvishSuffixes = [
+  'heim', 'gard', 'gul', 'dorn', 'muk', 'forge', 'hold', 'rock', 'stone', 'deep', 
+  'crag', 'delve', 'mine', 'grot', 'holt'
+];
+
+// Human (Familiar, Grounded) Earthy and settlement-focused
+var humanPrefixes = [
+  'Bright', 'Dark', 'Frost', 'Shadow', 'North', 'South', 'East', 'West', 'High', 'Low', 
+  'Red', 'Green', 'Blue', 'Grey', 'New'
+];
+var humanMiddles = [
+  'en', 'ly', 'ton', 'er', 'on', 'ham', 'ing', 'wood', 'land', 'by', 
+  'es', 'ow', 'ry', 'st', 'we'
+];
+var humanSuffixes = [
+  'shire', 'wood', 'vale', 'ton', 'ford', 'ham', 'ley', 'bridge', 'hill', 'brook', 
+  'mead', 'well', 'gate', 'port', 'field'
+];
+
+// Filter arrays for pronounceability
+var locPrefixesFilteredSets = locPrefixesSets.map(set => set.filter(isPronounceable));
+var locMiddlesFilteredSets = locMiddlesSets.map(set => set.filter(isPronounceable));
+var locSuffixesFilteredSets = locSuffixesSets.map(set => set.filter(isPronounceable));
+
+// Descriptors for descriptive elements
+var descriptors = ['Great', 'Lost', 'Forbidden', 'Ancient', 'Mystic', 'Sacred'];
+
+// Generates a fantasy location name
+function GenerateLocationName(wordCount = 1, culture = 'mixed') {
+// Example usage
+//GenerateLocationName();       // Single-word name
+//GenerateLocationName(2);      // Two-word name
+//GenerateLocationName(3, 'elvish'); // Three-word elvish name
+//GenerateLocationName(4, 'dwarvish'); // Four-word dwarvish name
+
+  let prefixes, middles, suffixes;
+
+  // Select arrays based on culture
+  if (culture === 'elvish') {
+    prefixes = elvishPrefixes.filter(isPronounceable);
+    middles = elvishMiddles.filter(isPronounceable);
+    suffixes = elvishSuffixes.filter(isPronounceable);
+  } else if (culture === 'dwarvish') {
+    prefixes = dwarvishPrefixes.filter(isPronounceable);
+    middles = dwarvishMiddles.filter(isPronounceable);
+    suffixes = dwarvishSuffixes.filter(isPronounceable);
+  } else if (culture === 'human') {
+    prefixes = humanPrefixes.filter(isPronounceable);
+    middles = humanMiddles.filter(isPronounceable);
+    suffixes = humanSuffixes.filter(isPronounceable);
+  } else {
+    prefixes = Pick(locPrefixesFilteredSets);
+    middles = Pick(locMiddlesFilteredSets);
+    suffixes = Pick(locSuffixesFilteredSets);
+  }
+
+  let parts = [];
+  let firstLetter = null;
+
+  // Generate parts with variety in structure
+  for (let i = 0; i < wordCount; i++) {
+    let pattern = Math.floor(Math.random() * 2); // 0: standard, 1: compound (removed descriptive from here)
+    let part;
+
+    if (pattern === 0) {
+      // Standard: prefix + optional middle + suffix
+      part = Pick(prefixes) + (Math.random() < 0.5 ? Pick(middles) : '') + Pick(suffixes);
+    } else {
+      // Compound: suffix + suffix
+      part = Pick(suffixes) + Pick(suffixes);
+    }
+
+    part = part.charAt(0).toUpperCase() + part.slice(1);
+    if (i === 0) {
+      firstLetter = part.charAt(0).toLowerCase();
+    }
+
+    // Alliteration: 50% chance to match first letter for subsequent parts
+    if (i > 0 && Math.random() < 0.5) {
+      let matchingSuffixes = suffixes.filter(s => s.charAt(0).toLowerCase() === firstLetter);
+      if (matchingSuffixes.length > 0) {
+        part = Pick(prefixes) + (Math.random() < 0.5 ? Pick(middles) : '') + Pick(matchingSuffixes);
+        part = part.charAt(0).toUpperCase() + part.slice(1);
+      }
+    }
+
+    parts.push(part);
+  }
+
+  // Join parts with separators
+  let result = parts[0];
+  let lastSeparator = ' ';
+
+  for (let i = 1; i < parts.length; i++) {
+    let prevChar = result.slice(-1);
+    let nextChar = parts[i].charAt(0);
+    let separator = getSeparator(i === 1, prevChar, nextChar, lastSeparator);
+    result += separator + parts[i];
+    lastSeparator = separator;
+  }
+
+  // Optional descriptive element (20% chance, one per name)
+  if (Math.random() < 0.2) {
+    let descriptor = Pick(descriptors);
+    result = descriptor + ' ' + result; // Always add a space after descriptor
+  }
+
+  // Cleanup: remove trailing separators or spaces
+  return result.replace(/['-\s]+$/, '');
+}
+
+// Determines the separator to use between words
+function getSeparator(isFirstTwoWords = false, prevChar = '', nextChar = '', lastSeparator = '') {
+  let separators = [' ', '\'', '-'];
+  let weights = isFirstTwoWords ? [0.8, 0.2, 0] : [0.7, 0.15, 0.15];
+
+  // If the last separator was not a space, force a space
+  if (lastSeparator !== ' ') {
+    weights = [1, 0, 0];
+  }
+
+  // Choose separator based on weights
+  let rand = Math.random();
+  let cumulative = 0;
+  let chosenSeparator = ' ';
+
+  for (let i = 0; i < separators.length; i++) {
+    cumulative += weights[i];
+    if (rand < cumulative) {
+      chosenSeparator = separators[i];
+      break;
+    }
+  }
+
+  // Ensure apostrophe is followed by a letter
+  if (chosenSeparator === '\'' && (!nextChar || !/[a-z]/i.test(nextChar))) {
+    chosenSeparator = ' ';
+  }
+
+  return chosenSeparator;
+}
+
+
 function LocalStorage() {
   this.getItem = function (key, callback) {
     var result = window.localStorage.getItem(key);
@@ -447,7 +711,76 @@ K.Verbs = [
   "Obtain",
   "Collect",
   "Retrieve", 
-  "Secure"];
+  "Secure",
+  "Gather",
+  "Amass",
+  "Procure",
+  "Accumulate",
+  "Gain",
+  "Harvest",
+  "Capture",
+  "Seize",
+  "Attain",
+  "Fetch",
+  "Install",
+  "Repair",
+  "Replace",
+  "Upgrade",
+  "Decomission",
+  "Seize",
+  "Audit",
+  "Dismantle"];
+
+K.moreVerbs = [
+  "Seek an audience with",
+  "Consult",
+  "Court with",
+  "Send a Candy-Gram to", 
+  "Spy on",
+  "Eavesdrop on",
+  "Visit",
+  "Seek Counsel with",
+  "Chauffeur",
+  "Buttle",
+  "Call on",
+  "Engage in coitus with",
+  "Befriend",
+  "Escort",
+  "Eliminate",
+  "Bring to Justice",
+  "Negotiate with",
+  "Challenge",
+  "Interrogate",
+  "Recruit",
+  "Banish",
+  "Summon",
+  "Infiltrate",
+  "Rescue",
+  "Imprison",
+  "Liberate"];
+
+K.spellVerbs = [
+  "Performed the Forbidden Dance of",
+  "Mastered the art of",
+  "Caused an Outage using",
+  "Cast the spell of",
+  "Conjured the essence of",
+  "Invoked the spirit of",
+  "Summoned the wrath of",
+  "Unleashed the fury of",
+  "Harnessed the power of"];
+  
+K.spellTargets = [
+  "upon a small village",
+  "across the land",
+  "aided by the power of an unseen enemy",
+  "by an unknown power",
+  "via an unknown force",
+  "within the ancient ruins",
+  "through the mystical portal",
+  "under the full moon",
+  "in the heart of the forest",
+  "at the break of dawn"];
 
 K.Equips = [
   "Weapon",
@@ -733,7 +1066,9 @@ K.Specials = [
   "Router",
   "Firewall",
   "Codex",
-  "Source Code"];
+  "Source Code",
+  "Memory Card",
+  "Rain Napper"];
 
 K.ItemAttrib = [
   "Golden",
@@ -823,7 +1158,9 @@ K.ItemAttrib = [
   "Managed",
   "Emotional Support",
   "Service",
-  "Docusigned"];
+  "Docusigned",
+  "Forbidden",
+  "Rogue"];
 
 K.ItemOfs = [
   "Foreboding",
@@ -882,6 +1219,7 @@ K.ItemOfs = [
   "the Bone",
   "the Shire",
   "the unspoken",
+  "the Dizzy Age",
   "He who remains",
   "He who shall not be named",
   "Númenór",
@@ -934,6 +1272,7 @@ K.BoringItems = [
   "iPad",
   "broken LCD",
   "floppy",
+  "memory card",
   "source code",
   "code",
   "CD",

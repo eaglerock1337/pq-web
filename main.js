@@ -243,11 +243,6 @@ function MonsterTask(level) {
   var result = Split(monster,0);
   game.task = 'kill|' + monster;
   
-//  //allow for multiple monster items' drops
-//  var items = Split(monster, 2, ",");
-//  var selectedItem = Pick(items);
-//  Add(Inventory, selectedItem, 1);
-
   var qty = 1;
   if (level-lev > 10) {
     // lev is too low. multiply...
@@ -662,12 +657,26 @@ function WinStat() {
   Add(Stats, i, 1);
 }
 
+function GenerateItemPrefix(){
+	return Random(2) === 0 ? Pick(K.ItemAttrib): 
+		(Random(2) === 0 ? (Random(2) === 0 ? Split(Pick(K.OffenseAttrib),0) : Split(Pick(K.OffenseBad),0)) : 
+		(Random(2) === 0 ? Split(Pick(K.DefenseAttrib),0) : Split(Pick(K.DefenseBad),0)));
+}
+
 function SpecialItem() {
   return InterestingItem() + ' of ' + Pick(K.ItemOfs);
 }
 
 function InterestingItem() {
-  return Pick(K.ItemAttrib) + ' ' + Pick(K.Specials);
+  return Random(2) === 0 ? GenerateItemPrefix() + ' ' + Pick(K.Specials) : CuriousItem();
+}
+
+function CuriousItem() {
+	let result, cItem;
+	cItem =   Random(2) === 0 ? (Random(2) === 0 ? Split(Pick(K.Weapons),0) : Split(Pick(K.Shields),0)) : 
+		(Random(2) === 0 ? Split(Pick(K.Armors),0) : ProperCase(BoringItem()));
+	result = GenerateItemPrefix() + ' ' + cItem;
+	return result;
 }
 
 function BoringItem() {
@@ -698,6 +707,14 @@ function randomTask() {
     return result;
 }
 
+
+function diplomaticMission() {
+	let result = Pick(K.moreVerbs) + " and " + Pick(K.Verbs) + " " + Indefinite(GenerateItemPrefix(),1) + " " + Split(Pick(Random(2) === 0 ? K.Races : K.Monsters),0) + 
+	(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + " " + 
+	(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) + " near " + GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human']));
+	return result;
+}
+
 function WinItem() {
   if (Max(250, Random(999)) < Inventory.length()) {
     Add(Inventory, Pick(Inventory.rows()).firstChild.innerText, 1);
@@ -718,7 +735,7 @@ function CompleteQuest() {
 
   game.questmonster = '';
   var caption;
-  switch (Random(18)) {
+  switch (Random(19)) {
   case 0:
     var level = GetI(Traits,'Level');
     var lev = 0;
@@ -809,7 +826,12 @@ function CompleteQuest() {
   case 17:
     caption = randomTask();
     break;
-
+  case 18:
+    caption = diplomaticMission();
+    break;
+  case 19: //not used yet...
+	caption = "your message here";
+    break;
   }
   if (!game.Quests) game.Quests = [];
   while (game.Quests.length > 99) game.Quests.shift();

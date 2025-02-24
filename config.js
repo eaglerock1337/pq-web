@@ -157,6 +157,201 @@ function GenerateName() {
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
+// Prefixes (charPrefixesSets)
+// These are the starting elements, often suggesting personality traits, titles, or evocative imagery.
+// Define multiple sets of name parts for increased randomness
+
+// Focuses on heroic and mystical themes (brave, shadow, flame).
+var charPrefixesSet1 = [
+  'Brave', 'Shadow', 'Flame', 'Azer', 'El', 'Thal', 'Dun', 'Fal', 'Gor', 'Hel', 
+  'Dusk', 'Dawn', 'Tide', 'Wave', 'Frost', 'Ash', 'Oak', 'Pine', 'Hawk', 'Storm'
+];
+
+// Adds a mystical or rugged feel (mist, rift, rune).
+var charPrefixesSet2 = [
+  'Kar', 'Lor', 'Nor', 'Quel', 'Sil', 'Tal', 'Val', 'Zul', 'Bast', 'Eld', 
+  'Mist', 'Shade', 'Glim', 'Rift', 'Crag', 'Peak', 'Soot', 'Coal', 'Jade', 'Rune'
+];
+
+// Emphasizes colors and metals, common in fantasy naming.
+var charPrefixesSet3 = [
+  'Bright', 'Dark', 'Frost', 'Shadow', 'Iron', 'Gold', 'Silver', 'Bronze', 'Sun', 'Moon', 
+  'Star', 'Sky', 'Red', 'Blue', 'Green', 'White', 'Black', 'Stone', 'Wind', 'Thunder'
+];
+var charPrefixesSets = [charPrefixesSet1, charPrefixesSet2, charPrefixesSet3];
+
+// Middles (charMiddlesSets)
+// These connect prefixes and suffixes, adding rhythm and flavor.
+
+// Short, flowing sounds for a light touch (e.g., "en", "wyn").
+var charMiddlesSet1 = [
+  'en', 'or', 'ar', 'ir', 'ur', 'an', 'in', 'on', 'un', 'el', 
+  'ys', 'eth', 'wyn', 'ra', 'la', 'ma', 'na', 'si', 'ti', 'vo'
+];
+
+// Slightly sharper or melodic connectors (e.g., "il", "ai").
+var charMiddlesSet2 = [
+  'il', 'ol', 'ul', 'al', 'er', 'ath', 'eth', 'ith', 'oth', 'uth', 
+  'es', 'is', 'os', 'us', 'ai', 'ei', 'oi', 'ui', 'ka', 'ta'
+];
+
+// Longer, grounded endings (e.g., "and", "ern").
+var charMiddlesSet3 = [
+  'and', 'end', 'ind', 'ond', 'und', 'ald', 'eld', 'ild', 'old', 'uld', 
+  'ern', 'orn', 'irn', 'urn', 'ant', 'ent', 'int', 'ont', 'unt', 'ard'
+];
+var charMiddlesSets = [charMiddlesSet1, charMiddlesSet2, charMiddlesSet3];
+
+// Suffixes (charSuffixesSets)
+// These are the endings, often denoting titles or traits.
+
+// Mix of titles and serene traits (e.g., "the Brave", "the Wise").
+var charSuffixesSet1 = [
+  'the Brave', 'the Wise', 'the Bold', 'the Swift', 'the Strong', 'the Just', 'the Kind', 'the Fierce', 'the Noble', 'the Valiant', 
+  'the Gentle', 'the Mighty', 'the Fearless', 'the Loyal', 'the Protector', 'the Guardian', 'the Seeker', 'the Wanderer', 'the Sage', 'the Healer'
+];
+
+// Defensive or rugged features (e.g., "the Defender", "the Stalwart").
+var charSuffixesSet2 = [
+  'the Defender', 'the Stalwart', 'the Shield', 'the Sentinel', 'the Watcher', 'the Keeper', 'the Protector', 'the Guardian', 'the Champion', 'the Warrior', 
+  'the Hunter', 'the Tracker', 'the Scout', 'the Pathfinder', 'the Survivor', 'the Resilient', 'the Enduring', 'the Unyielding', 'the Unbroken', 'the Resolute'
+];
+
+// Open or mystical traits (e.g., "the Enchanter", "the Mystic").
+var charSuffixesSet3 = [
+  'the Enchanter', 'the Mystic', 'the Sorcerer', 'the Magician', 'the Illusionist', 'the Seer', 'the Oracle', 'the Visionary', 'the Dreamer', 'the Prophet', 
+  'the Alchemist', 'the Shaman', 'the Druid', 'the Elementalist', 'the Conjurer', 'the Warlock', 'the Witch', 'the Wizard', 'the Sage', 'the Healer'
+];
+var charSuffixesSets = [charSuffixesSet1, charSuffixesSet2, charSuffixesSet3];
+
+// Expanded Culture-Specific Arrays
+
+// Elvish (Graceful, Melodic) Light, flowing, and ethereal.
+var elvishCharPrefixes = [
+  'El', 'Lor', 'Mor', 'Sil', 'Tel', 'Ael', 'Fae', 'Vyn', 'Lun', 'Syl', 
+  'Ere', 'Ith', 'Ara', 'Cele', 'Nim'
+];
+var elvishCharMiddles = [
+  'en', 'ith', 'ar', 'el', 'yn', 'ae', 'ir', 'is', 'ora', 'eth', 
+  'ia', 'la', 'ri', 'va', 'me'
+];
+var elvishCharSuffixes = [
+  'dell', 'nor', 'iel', 'wyn', 'thar', 'lith', 'dor', 'viel', 'syl', 'eth', 
+  'ara', 'ien', 'mir', 'las', 'ren'
+];
+
+// Dwarvish (Harsh, Sturdy) Rough, solid, and industrious
+var dwarvishCharPrefixes = [
+  'Dun', 'Kar', 'Gor', 'Hel', 'Tor', 'Dru', 'Bar', 'Thrum', 'Kor', 'Gar', 
+  'Urk', 'Bor', 'Dwar', 'Grim', 'Ston'
+];
+var dwarvishCharMiddles = [
+  'ad', 'um', 'or', 'ak', 'un', 'od', 'ur', 'ag', 'ol', 'am', 
+  'en', 'ir', 'ok', 'ug', 'ud'
+];
+var dwarvishCharSuffixes = [
+  'heim', 'gard', 'gul', 'dorn', 'muk', 'forge', 'hold', 'rock', 'stone', 'deep', 
+  'crag', 'delve', 'mine', 'grot', 'holt'
+];
+
+// Human (Familiar, Grounded) Earthy and settlement-focused
+var humanCharPrefixes = [
+  'Bright', 'Dark', 'Frost', 'Shadow', 'North', 'South', 'East', 'West', 'High', 'Low', 
+  'Red', 'Green', 'Blue', 'Grey', 'New'
+];
+var humanCharMiddles = [
+  'en', 'ly', 'ton', 'er', 'on', 'ham', 'ing', 'wood', 'land', 'by', 
+  'es', 'ow', 'ry', 'st', 'we'
+];
+var humanCharSuffixes = [
+  'shire', 'wood', 'vale', 'ton', 'ford', 'ham', 'ley', 'bridge', 'hill', 'brook', 
+  'mead', 'well', 'gate', 'port', 'field'
+];
+
+
+function GenerateNameNew(wordCount = 1, culture = 'mixed') {
+// Example usage
+//GenerateLocationName();       // Single-word name
+//GenerateLocationName(2);      // Two-word name
+//GenerateLocationName(3, 'elvish'); // Three-word elvish name
+//GenerateLocationName(4, 'dwarvish'); // Four-word dwarvish name
+
+  let prefixes, middles, suffixes;
+
+  // Select arrays based on culture
+  if (culture === 'elvish') {
+    prefixes = elvishCharPrefixes.filter(isPronounceable);
+    middles = elvishCharMiddles.filter(isPronounceable);
+    suffixes = elvishCharSuffixes.filter(isPronounceable);
+  } else if (culture === 'dwarvish') {
+    prefixes = dwarvishCharPrefixes.filter(isPronounceable);
+    middles = dwarvishCharMiddles.filter(isPronounceable);
+    suffixes = dwarvishCharSuffixes.filter(isPronounceable);
+  } else if (culture === 'human') {
+    prefixes = humanCharPrefixes.filter(isPronounceable);
+    middles = humanCharMiddles.filter(isPronounceable);
+    suffixes = humanCharSuffixes.filter(isPronounceable);
+  } else {
+    prefixes = Pick(locPrefixesFilteredSets);
+    middles = Pick(locMiddlesFilteredSets);
+    suffixes = Pick(locSuffixesFilteredSets);
+  }
+
+  let parts = [];
+  let firstLetter = null;
+
+  // Generate parts with variety in structure
+  for (let i = 0; i < wordCount; i++) {
+    let pattern = Math.floor(Math.random() * 2); // 0: standard, 1: compound (removed descriptive from here)
+    let part;
+
+    if (pattern === 0) {
+      // Standard: prefix + optional middle + suffix
+      part = Pick(prefixes) + (Math.random() < 0.5 ? Pick(middles) : '') + Pick(suffixes);
+    } else {
+      // Compound: suffix + suffix
+      part = Pick(suffixes) + Pick(suffixes);
+    }
+
+    part = part.charAt(0).toUpperCase() + part.slice(1);
+    if (i === 0) {
+      firstLetter = part.charAt(0).toLowerCase();
+    }
+
+    // Alliteration: 50% chance to match first letter for subsequent parts
+    if (i > 0 && Math.random() < 0.5) {
+      let matchingSuffixes = suffixes.filter(s => s.charAt(0).toLowerCase() === firstLetter);
+      if (matchingSuffixes.length > 0) {
+        part = Pick(prefixes) + (Math.random() < 0.5 ? Pick(middles) : '') + Pick(matchingSuffixes);
+        part = part.charAt(0).toUpperCase() + part.slice(1);
+      }
+    }
+
+    parts.push(part);
+  }
+
+  // Join parts with separators
+  let result = parts[0];
+  let lastSeparator = ' ';
+
+  for (let i = 1; i < parts.length; i++) {
+    let prevChar = result.slice(-1);
+    let nextChar = parts[i].charAt(0);
+    let separator = getSeparator(i === 1, prevChar, nextChar, lastSeparator);
+    result += separator + parts[i];
+    lastSeparator = separator;
+  }
+
+/*  // Optional descriptive element (20% chance, one per name)
+  if (Math.random() < 0.2) {
+    let descriptor = Pick(descriptors);
+    result = descriptor + ' ' + result; // Always add a space after descriptor
+  }
+*/
+  // Cleanup: remove trailing separators or spaces
+  return result.replace(/['-\s]+$/, '');
+}
+
 /*//-- we have a pick function already...  Is this one better??
 // Utility function to pick a random element from an array
 function Pick(array) {

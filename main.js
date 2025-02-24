@@ -702,7 +702,7 @@ function randomTask() {
     var preposition1 = Random(2) === 0 ? 'of' : 'from';
     var preposition2 = Random(2) === 0 ? 'of' : 'from';
 
-    result = verb + ' ' + itemFunction(ProperCase(firstItemFunction()), quantity) + ' ' + preposition1 + ' the ' + secondItemFunction() + ' ' + preposition2 + ' ' + Pick(K.ImpressiveTitles) + ' ' + GenerateName() + ', ' + Pick(K.KlassTitles) + ' ' + Split(Pick(K.Klasses), 0) + ' of the ' + Plural(Split(Pick(target), 0));
+    result = verb + ' ' + itemFunction(ProperCase(firstItemFunction()), quantity) + ' ' + preposition1 + ' the ' + secondItemFunction() + ' ' + preposition2 + ' ' + Pick(K.ImpressiveTitles) + ' ' + GenerateNameNew(Pick([1,2]), Pick(['mixed','elvish','dwarvish','human'])) + ', ' + Pick(K.KlassTitles) + ' ' + Split(Pick(K.Klasses), 0) + ' of the ' + Plural(Split(Pick(target), 0));
 
     return result;
 }
@@ -791,7 +791,7 @@ function CompleteQuest() {
     caption = 'Sign for delivery of ' + Indefinite(BoringItem(), (Random(42) + 1));
     break;
   case 10:
-    caption = 'Ship out ' + Indefinite(BoringItem(), (Random(20) + 1));
+    caption = 'Ship ' + Indefinite(BoringItem(), (Random(20) + 1)) + " to the village of " + GenerateLocationName() + ".";
     break;
   case 11:
     caption = 'Recover the CEO\'s ' + InterestingItem();

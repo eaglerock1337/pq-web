@@ -288,6 +288,15 @@ function joinParts(parts, generatorType) {
   return result;
 }
 
+function apostroPhix(text) {
+    // Check if the string contains no spaces
+    if (!text.includes(' ')) {
+        // Replace apostrophes with spaces
+        return text.replace(/'/g, ' ');
+    }
+    // Return the original text if it contains spaces
+    return text;
+}
 
 // Determines a separator based on weighted probabilities.
 // The generatorType flag can be "name", "dark", or else defaults to location-style.
@@ -470,7 +479,7 @@ var christianWholeNames = [
   "Michael", "David", "Matthew", "Christopher", "Richard",
   "Mark", "Paul", "Peter", "Thomas", "Stephen", "Charles",
   "Joseph", "Samuel", "Nathan", "Daniel", "Isaac", "Benjamin",
-  "Luke", "Timothy"
+  "Luke", "Timothy", "Susan"
 ];
 
 /*
@@ -489,7 +498,8 @@ var christianNameComponents = [
   { prefix: "mat", infix: "thew" },        // Matthew
   { prefix: "chris", infix: "topher" },    // Christopher
   { prefix: "ric", infix: "hard" },        // Richard
-  { prefix: "sam", infix: "uel" }          // Samuel
+  { prefix: "sam", infix: "uel" },         // Samuel
+  { prefix: "sus", infix: "an" }          //Susan
 ];
 
 /*
@@ -797,7 +807,8 @@ function GenerateNameNew(wordCount = 1, culture = 'mixed') {
     // Fallback to mixed.
     result = GenerateNameNew(wordCount, 'mixed');
   }
-  return result.trim();
+  
+  return apostroPhix(result.trim());
 }
 
 //---- Location Name Generator:
@@ -1001,7 +1012,7 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
   }
 
   // Cleanup: remove trailing separators or spaces
-  return result.replace(/['-\s]+$/, '');
+  return apostroPhix(result.replace(/['-\s]+$/, ''));
 }
 
 

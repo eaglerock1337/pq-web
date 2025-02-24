@@ -180,7 +180,7 @@ function doSideQuest() {
 		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human']));
 	Q('task|10|You are approached by ' + coolName() + ', who tells you of a great treasure' + sideQuestDest);
 	Q('task|5|"You seek the "' + sideQuestItm + '...');
-	Q('task|2|You agreem and set out on your journey...');
+	Q('task|2|You agree and set out on your journey...');
 	Q('task|5|You reach your destination and find...');
 	//---todo add some additional outcomes...
 	Q('task|2|...nothing.  You begin to make your way back home.');

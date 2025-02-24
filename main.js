@@ -172,6 +172,26 @@ function InterplotCinematic() {
   Q('plot|1|Loading');
 }
 
+function doSideQuest() {
+    let sideQuestNPC = coolName();
+	let sideQuestItm = (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
+	let sideQuestDest = Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + 
+		ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
+		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human']));
+	Q('task|10|You are approached by ' + coolName() + ', who tells you of a great treasure' + sideQuestDest);
+	Q('task|5|"You seek the "' + sideQuestItm + '...');
+	Q('task|2|You agreem and set out on your journey...');
+	Q('task|5|You reach your destination and find...');
+	//---todo add some additional outcomes...
+	Q('task|2|...nothing.  You begin to make your way back home.');
+	Q('task|4|You quicky find ' + sideQuestNPC + ' who appologizes for wasting your time.');
+	Q('task|4|Not before you rattle some gold out of them!');
+	addScaledGold();
+	//---todo add incremental quest completion?
+	QuestBar.reposition(QuestBar.Max());
+    TaskBar.reposition(TaskBar.Max());
+}
+
 
 function StrToInt(s) {
   return parseInt(s, 10);
@@ -286,6 +306,19 @@ function LowerCase(s) {
 
 function ProperCase(s) {
   return Copy(s,1,1).toUpperCase() + Copy(s,2,10000);
+}
+
+function addScaledGold() {
+  let currentGold = GetI(Inventory, 'Gold');
+  let additionalGold;
+
+  if (currentGold <= 100) {
+    additionalGold = 100;
+  } else {
+	additionalGold = Math.floor(100 * Math.pow(1.05, currentGold / 100));
+  }
+
+  Add(Inventory, 'Gold', additionalGold);
 }
 
 function EquipPrice() {
@@ -736,7 +769,7 @@ function CompleteQuest() {
 
   game.questmonster = '';
   var caption;
-  switch (Random(19)) {
+  switch (Random(20)) {
   case 0:
     var level = GetI(Traits,'Level');
     var lev = 0;
@@ -830,8 +863,9 @@ function CompleteQuest() {
   case 18:
     caption = diplomaticMission();
     break;
-  case 19: //not used yet...
-	caption = "your message here";
+  case 19:
+    caption = "Side Quest: Title TBD";
+    doSideQuest();
     break;
   }
   if (!game.Quests) game.Quests = [];
@@ -846,69 +880,6 @@ function CompleteQuest() {
   SaveGame();
 }
 
-function toRoman(n) {
-  if (!n) return "N";
-  var s = "";
-  function _rome(dn,ds) {
-    if (n >= dn) {
-      n -= dn;
-      s += ds;
-      return true;
-    } else return false;
-  }
-  if (n < 0) {
-    s = "-";
-    n = -n;
-  }
-
-  while (_rome(10000,"T")) {0;}
-  _rome(9000,"MT");
-  _rome(5000,"A");
-  _rome(4000,"MA");
-  while (_rome(1000,"M")) {0;}
-  _rome(900,"CM");
-  _rome(500,"D");
-  _rome(400,"CD");
-  while (_rome(100,"C")) {0;}
-  _rome(90,"XC");
-  _rome(50,"L");
-  _rome(40,"XL");
-  while (_rome(10,"X")) {0;}
-  _rome(9,"IX");
-  _rome(5,"V");
-  _rome(4,"IV");
-  while (_rome(1,"I")) {0;}
-  return s;
-}
-
-function toArabic(s) {
-  n = 0;
-  s = s.toUpperCase();
-  function _arab(ds,dn) {
-    if (!Starts(s, ds)) return false;
-    s = s.substr(ds.length);
-    n += dn;
-    return true;
-  }
-  while (_arab("T",10000)) {0;}
-  _arab("MT",9000);
-  _arab("A",5000);
-  _arab("MA",4000);
-  while (_arab("M",1000)) {0;}
-  _arab("CM",900);
-  _arab("D",500);
-  _arab("CD",400);
-  while (_arab("C",100)) {0;}
-  _arab("XC",90);
-  _arab("L",50);
-  _arab("XL",40);
-  while (_arab("X",10)) {0;}
-  _arab("IX",9);
-  _arab("V",5);
-  _arab("IV",4);
-  while (_arab("I",1)) {0;}
-  return n;
-}
 
 function CompleteAct() {
   Plots.CheckAll();

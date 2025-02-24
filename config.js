@@ -140,6 +140,13 @@ function randseed(set) {
 }
 
 
+function weightedRandom(n, weight=0.5) {
+    const random = seed.uint32() / 0xFFFFFFFF; // Generates a random float between 0 and 1
+    const weighted = random ** (1 - weight); // Bias the random value based on weight
+    return Math.floor(weighted * n);
+}
+
+
 function Pick(a) {
   return a[Random(a.length)];
 }
@@ -151,6 +158,70 @@ function Pick(array) {
 }
 */
 
+
+function toRoman(n) {
+  if (!n) return "N";
+  var s = "";
+  function _rome(dn,ds) {
+    if (n >= dn) {
+      n -= dn;
+      s += ds;
+      return true;
+    } else return false;
+  }
+  if (n < 0) {
+    s = "-";
+    n = -n;
+  }
+
+  while (_rome(10000,"T")) {0;}
+  _rome(9000,"MT");
+  _rome(5000,"A");
+  _rome(4000,"MA");
+  while (_rome(1000,"M")) {0;}
+  _rome(900,"CM");
+  _rome(500,"D");
+  _rome(400,"CD");
+  while (_rome(100,"C")) {0;}
+  _rome(90,"XC");
+  _rome(50,"L");
+  _rome(40,"XL");
+  while (_rome(10,"X")) {0;}
+  _rome(9,"IX");
+  _rome(5,"V");
+  _rome(4,"IV");
+  while (_rome(1,"I")) {0;}
+  return s;
+}
+
+function toArabic(s) {
+  n = 0;
+  s = s.toUpperCase();
+  function _arab(ds,dn) {
+    if (!Starts(s, ds)) return false;
+    s = s.substr(ds.length);
+    n += dn;
+    return true;
+  }
+  while (_arab("T",10000)) {0;}
+  _arab("MT",9000);
+  _arab("A",5000);
+  _arab("MA",4000);
+  while (_arab("M",1000)) {0;}
+  _arab("CM",900);
+  _arab("D",500);
+  _arab("CD",400);
+  while (_arab("C",100)) {0;}
+  _arab("XC",90);
+  _arab("L",50);
+  _arab("XL",40);
+  while (_arab("X",10)) {0;}
+  _arab("IX",9);
+  _arab("V",5);
+  _arab("IV",4);
+  while (_arab("I",1)) {0;}
+  return n;
+}
 
 //---Original PQ Name Generator
 var KParts = [
@@ -931,6 +1002,12 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
 
   // Cleanup: remove trailing separators or spaces
   return result.replace(/['-\s]+$/, '');
+}
+
+
+function coolName() {
+	return (Random(2) === 0 ? Pick(K.Titles) + " " : "") + GenerateNameNew(Pick([1,2])) + 
+	(Random(2) === 0 ? "" : ", " + (Random(2) === 0 ?Pick(K.SuffixTitles) : toRoman((weightedRandom(100,0.14)+1))));
 }
 
 
@@ -2239,21 +2316,38 @@ K.Klasses = [
 K.Titles = [
   "Chud",
   "Mr.",
+  "Miss",
   "Mrs.",
+  "Ms.",
   "Sir",
   "Sgt.",
-  "Ms.",
   "Captain",
   "Chief",
   "Officer",
-  "Esq.",
+  "Notary",
   "Supervisor",
   "Manager",
   "Padre",
   "Pastor",
   "Admiral",
   "Monsignor",
-  "Saint"];
+  "Saint",
+  "Doctor"];
+
+K.SuffixTitles = [
+  "Esq.",
+  "Jr.",
+  "Sr.",
+  "CPA",
+  "PhD",
+  "DDS",
+  "DMD",
+  "MD",
+  "Prof.",
+  "LLC",
+  "GmbH",
+  "Ltd."
+];
 
 K.ImpressiveTitles = [
   "King",

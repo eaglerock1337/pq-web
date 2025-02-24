@@ -202,7 +202,7 @@ function cancel() {
 }
 
 function GenClick() {
-  traits.Name = GenerateName();
+  traits.Name = coolName();
   if (document)
     $("#Name").attr("value", traits.Name);
 }

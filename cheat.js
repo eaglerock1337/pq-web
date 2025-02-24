@@ -66,18 +66,7 @@ function Cheats() {
     WinStat();
   });
 
-cheat("$$$", function () {
-  let currentGold = GetI(Inventory, 'Gold');
-  let additionalGold;
-
-  if (currentGold <= 100) {
-    additionalGold = 100;
-  } else {
-	additionalGold = Math.floor(100 * Math.pow(1.05, currentGold / 100));
-  }
-
-  Add(Inventory, 'Gold', additionalGold);
-});
+cheat("$$$", addScaledGold());
 
 
   cheat("Save", function () {

@@ -11,6 +11,10 @@
   margin-bottom: 0;
 }
 
+#name {
+	width: 256px !IMPORTANT;
+}
+
 fieldset {
   border: solid 1px #aaa;
   width: 180px;

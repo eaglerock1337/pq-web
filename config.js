@@ -331,87 +331,8 @@ function getSeparator(isFirstTwoWords = false, prevChar = '', nextChar = '', las
   return chosenSeparator;
 }
 
-//---Character Name Generator
-// Prefixes (charPrefixesSets)
-// These are the starting elements, often suggesting personality traits, titles, or evocative imagery.
-// Define multiple sets of name parts for increased randomness
-
-// New Prefixes (charPrefixesSets)
-var charPrefixesSet1 = [
-  "Storm", "Mist", "Shadow", "Ember", "Thorn", "Glade",
-  "Dawn", "Dusk", "Cinder", "Gale", "Bramble", "Frost",
-  "Raven", "Moon", "Sable", "Wind"
-];
-
-var charPrefixesSet2 = [
-  "Ald", "Bel", "Cyr", "Dor", "Eld", "Fen",
-  "Gal", "Hel", "Ith", "Jor", "Kel", "Lyr",
-  "Mar", "Nym", "Orin", "Per", "Quor", "Ryn",
-  "Syl", "Tal"
-];
-
-var charPrefixesSet3 = [
-  "Silver", "Golden", "Night", "Star", "Sun", "Sky",
-  "Earth", "Ocean", "Fire", "Leaf", "Stone", "Iron",
-  "Crimson", "Sapphire", "Amber", "Emerald"
-];
-
-var charPrefixesSets = [
-  charPrefixesSet1,
-  charPrefixesSet2,
-  charPrefixesSet3
-];
-
-// New Middles (charMiddlesSets)
-// Including an empty string option lets you sometimes skip a connector.
-var charMiddlesSet1 = [
-  "", "a", "e", "i", "o", "u", "ae", "ia"
-];
-
-var charMiddlesSet2 = [
-  "an", "en", "il", "or", "ar", "ir", "us", "os"
-];
-
-var charMiddlesSet3 = [
-  "ion", "iel", "ius", "ian", "eth", "wyn", "dor", "lis"
-];
-
-var charMiddlesSets = [
-  charMiddlesSet1,
-  charMiddlesSet2,
-  charMiddlesSet3
-];
-
-// New Suffixes (charSuffixesSets)
-var charSuffixesSet1 = [
-  "heart", "shade", "brook", "wind", "leaf", "branch",
-  "song", "root", "bloom", "field"
-];
-
-var charSuffixesSet2 = [
-  "rider", "wanderer", "seeker", "warden", "ranger", "keeper",
-  "strider", "rover", "tracker", "nomad"
-];
-
-var charSuffixesSet3 = [
-  "mage", "seer", "oracle", "dreamer", "shaman", "diviner",
-  "weaver", "druid", "caster", "sage"
-];
-
-var charSuffixesSets = [
-  charSuffixesSet1,
-  charSuffixesSet2,
-  charSuffixesSet3
-];
-
-// Filter arrays for pronounceability
-var charPrefixesFilteredSets = charPrefixesSets.map(set => set.filter(isPronounceable));
-var charMiddlesFilteredSets = charMiddlesSets.map(set => set.filter(isPronounceable));
-var charSuffixesFilteredSets = charSuffixesSets.map(set => set.filter(isPronounceable));
-
-
+// "Character" Name Generator
 // Expanded Culture-Specific Arrays
-
 // Elvish (Graceful, Melodic) Light, flowing, and ethereal.
 var elvishCharPrefixes = [
   'El', 'Lor', 'Mor', 'Sil', 'Tel', 'Ael', 'Fae', 'Vyn', 'Lun', 'Syl', 
@@ -426,6 +347,11 @@ var elvishCharSuffixes = [
   'ara', 'ien', 'mir', 'las', 'ren'
 ];
 
+// More Elvish (Graceful, Melodic) - Adding ethereal, nature-inspired elements
+elvishCharPrefixes.push('Cal', 'Ely', 'Fin', 'Galad', 'Isil', 'Mel', 'Nen', 'Tari');
+elvishCharMiddles.push('du', 'li', 'no', 'ru', 'sa', 'vi', 'ze');
+elvishCharSuffixes.push('drel', 'fiel', 'lune', 'mari', 'sil', 'veth', 'zara');
+
 // Dwarvish (Harsh, Sturdy) Rough, solid, and industrious
 var dwarvishCharPrefixes = [
   'Dun', 'Kar', 'Gor', 'Hel', 'Tor', 'Dru', 'Bar', 'Thrum', 'Kor', 'Gar', 
@@ -439,6 +365,11 @@ var dwarvishCharSuffixes = [
   'heim', 'gard', 'gul', 'dorn', 'muk', 'forge', 'hold', 'rock', 'stone', 'deep', 
   'crag', 'delve', 'mine', 'grot', 'holt'
 ];
+
+// More Dwarvish (Harsh, Sturdy) - Adding rugged, earthy elements
+dwarvishCharPrefixes.push('Bryn', 'Dak', 'Fjor', 'Hrag', 'Krag', 'Thar', 'Ulf');
+dwarvishCharMiddles.push('az', 'ek', 'ig', 'oz', 'uk', 'uz', 'yr');
+dwarvishCharSuffixes.push('brek', 'dral', 'garn', 'khor', 'muld', 'skol', 'thain');
 
 /*
   =============================
@@ -465,6 +396,10 @@ var humanCharSuffixes = [
   'ridge', 'croft', 'chester', 'glen', 'moor', 'bourne', 'dale', 'borough'
 ];
 
+// More Human (Natural, Evocative) - Adding more natural and directional themes
+humanCharPrefixes.push('Ash', 'Cliff', 'Dune', 'Hawk', 'Lake', 'Pine', 'Vale');
+humanCharMiddles.push('den', 'don', 'kin', 'mar', 'sal', 'ter', 'win');
+humanCharSuffixes.push('bank', 'crest', 'ditch', 'grove', 'pond', 'rise', 'view');
 
 // -------------------
 // Christian Name Arrays & Component Data
@@ -506,8 +441,8 @@ var christianNameComponents = [
   For surnames we can use a separate whole–name dictionary...
 */
 var christianLastNameWhole = [
-  "Smith", "Johnson", "Williams", "Brown", "Jones",
-  "Miller", "Davis", "Wilson", "Anderson", "Taylor",
+  "Smith", "Johnson", "Williams", "Brown", "Jones","Trump",
+  "Miller", "Davis", "Wilson", "Anderson", "Taylor", "Thompson",
   "Thomas", "Moore", "Martin", "Allen", "Clark", "Walker"
 ];
 
@@ -516,12 +451,27 @@ var christianLastNameWhole = [
   For example, { prefix: "john", infix: "son" } yields "Johnson".
 */
 var christianLastNameComponents = [
-  { prefix: "john", infix: "son" },  // Johnson
+  { prefix: "john", infix: "son" },    // Johnson
   { prefix: "will", infix: "iams" },   // Williams
   { prefix: "brown", infix: "" },      // Brown (unchanged)
   { prefix: "smith", infix: "" },      // Smith
-  { prefix: "mill", infix: "er" }        // Miller
+  { prefix: "mill", infix: "er" }      // Miller
 ];
+
+// More Human-Christian (Conventional) - Adding traditional names and components
+christianWholeNames.push('Elizabeth', 'William', 'Sarah', 'Jonathan', 'Emily', 'George');
+christianNameComponents.push(
+  { prefix: "el", infix: "izabeth" },  // Elizabeth
+  { prefix: "wil", infix: "liam" },    // William
+  { prefix: "sar", infix: "ah" }       // Sarah
+);
+christianLastNameWhole.push('Harris', 'Lewis', 'Turner', 'Parker', 'Wright', 'Hill');
+christianLastNameComponents.push(
+  { prefix: "thomp", infix: "son" },   // Thompson
+  { prefix: "tr", infix: "ump" },      // Trump
+  { prefix: "har", infix: "ris" },     // Harris
+  { prefix: "lew", infix: "is" }       // Lewis
+);
 
 // -------------------
 // Christian Component-Based Name Generators
@@ -596,6 +546,11 @@ var darkEntitySuffixes = [
   "doom", "venom", "strike", "scar", "lo", "arg", "goth", "gore",
   "'thun", "urrath"
 ];
+
+// More Dark (Ominous, Sinister) - Adding more sinister elements
+darkEntityPrefixes.push('Bane', 'Death', 'Hex', 'Plague', 'Tor', 'Vile', 'Woe');
+darkEntityMiddles.push('brim', 'chill', 'dread', 'gash', 'mire', 'skull', 'vox');
+darkEntitySuffixes.push('claw', 'fury', 'gaze', 'plight', 'rend', 'skull', 'wail');
 
 function generateDarkEntityNameWord() {
   let word = Pick(darkEntityPrefixes);
@@ -833,7 +788,6 @@ var locPrefixesSet3 = [
   'Bright', 'Dark', 'Frost', 'Shadow', 'Iron', 'Gold', 'Silver', 'Bronze', 'Sun', 'Moon', 
   'Star', 'Sky', 'Red', 'Blue', 'Green', 'White', 'Black', 'Stone', 'Wind', 'Thunder'
 ];
-var locPrefixesSets = [locPrefixesSet1, locPrefixesSet2, locPrefixesSet3];
 
 // Middles (locMiddlesSets)
 // These connect prefixes and suffixes, adding rhythm and flavor.
@@ -855,7 +809,6 @@ var locMiddlesSet3 = [
   'and', 'end', 'ind', 'ond', 'und', 'ald', 'eld', 'ild', 'old', 'uld', 
   'ern', 'orn', 'irn', 'urn', 'ant', 'ent', 'int', 'ont', 'unt', 'ard'
 ];
-var locMiddlesSets = [locMiddlesSet1, locMiddlesSet2, locMiddlesSet3];
 
 // Suffixes (locSuffixesSets)
 // These are the endings, often denoting geographic or settlement types.
@@ -877,7 +830,31 @@ var locSuffixesSet3 = [
   'ridge', 'field', 'grove', 'haven', 'march', 'pass', 'reach', 'rest', 'rock', 'run', 
   'bay', 'cove', 'isle', 'point', 'sand', 'dune', 'plain', 'mead', 'steppe', 'rift'
 ];
+
+// More Mixed/Default - Expanding all three sets for variety
+// Set 1: Natural and serene
+locPrefixesSet1.push('Crest', 'Echo', 'Lush');
+locMiddlesSet1.push('di', 'lo', 'va');
+locSuffixesSet1.push('bluff', 'nook', 'weald');
+
+// Set 2: Mystical and rugged
+locPrefixesSet2.push('Haze', 'Silt', 'Twist');
+locMiddlesSet2.push('ca', 'ri', 'zu');
+locSuffixesSet2.push('chasm', 'ledge', 'spur');
+
+// Set 3: Colors and expansive
+locPrefixesSet3.push('Amber', 'Dusk', 'Pearl');
+locMiddlesSet3.push('eth', 'il', 'ond');
+locSuffixesSet3.push('expanse', 'rift', 'vale');
+
+var locPrefixesSets = [locPrefixesSet1, locPrefixesSet2, locPrefixesSet3];
+var locMiddlesSets = [locMiddlesSet1, locMiddlesSet2, locMiddlesSet3];
 var locSuffixesSets = [locSuffixesSet1, locSuffixesSet2, locSuffixesSet3];
+
+// Filter arrays for pronounceability
+var locPrefixesFilteredSets = locPrefixesSets.map(set => set.filter(isPronounceable));
+var locMiddlesFilteredSets = locMiddlesSets.map(set => set.filter(isPronounceable));
+var locSuffixesFilteredSets = locSuffixesSets.map(set => set.filter(isPronounceable));
 
 // Expanded Culture-Specific Arrays
 
@@ -895,10 +872,15 @@ var elvishSuffixes = [
   'ara', 'ien', 'mir', 'las', 'ren'
 ];
 
+// More Elvish (Graceful, Melodic) - Adding light, celestial elements
+elvishPrefixes.push('Ama', 'Celu', 'Eldar', 'Luth', 'Sera', 'Vali');
+elvishMiddles.push('da', 'le', 'mi', 'ro', 'ta', 'vu');
+elvishSuffixes.push('ethar', 'lind', 'mora', 'sara', 'thiel', 'vion');
+
 // Dwarvish (Harsh, Sturdy) Rough, solid, and industrious
 var dwarvishPrefixes = [
   'Dun', 'Kar', 'Gor', 'Hel', 'Tor', 'Dru', 'Bar', 'Thrum', 'Kor', 'Gar', 
-  'Urk', 'Bor', 'Dwar', 'Grim', 'Ston'
+  'Urk', 'Bor', 'Grim', 'Dwar', 'Ston', 'Dwarf', 'Stone', 'Mor'
 ];
 var dwarvishMiddles = [
   'ad', 'um', 'or', 'ak', 'un', 'od', 'ur', 'ag', 'ol', 'am', 
@@ -906,8 +888,13 @@ var dwarvishMiddles = [
 ];
 var dwarvishSuffixes = [
   'heim', 'gard', 'gul', 'dorn', 'muk', 'forge', 'hold', 'rock', 'stone', 'deep', 
-  'crag', 'delve', 'mine', 'grot', 'holt'
+  'crag', 'delve', 'mine', 'grot', 'holt', 'ia'
 ];
+
+// More Dwarvish (Harsh, Sturdy) - Adding mountainous, industrial elements
+dwarvishPrefixes.push('Bral', 'Dur', 'Grom', 'Hul', 'Nor', 'Vrek');
+dwarvishMiddles.push('az', 'du', 'gar', 'kh', 'or', 'um');
+dwarvishSuffixes.push('dun', 'fury', 'keld', 'mor', 'ruk', 'vald');
 
 // Human (Familiar, Grounded) Earthy and settlement-focused
 var humanPrefixes = [
@@ -923,13 +910,38 @@ var humanSuffixes = [
   'mead', 'well', 'gate', 'port', 'field'
 ];
 
-// Filter arrays for pronounceability
-var locPrefixesFilteredSets = locPrefixesSets.map(set => set.filter(isPronounceable));
-var locMiddlesFilteredSets = locMiddlesSets.map(set => set.filter(isPronounceable));
-var locSuffixesFilteredSets = locSuffixesSets.map(set => set.filter(isPronounceable));
+// More Human (Familiar, Grounded) - Adding everyday and elemental elements
+humanPrefixes.push('Birch', 'Clay', 'Fog', 'Moss', 'Rain', 'Snow');
+humanMiddles.push('bur', 'dal', 'fen', 'hol', 'mer', 'ton');
+humanSuffixes.push('bank', 'cross', 'heath', 'lane', 'mill', 'way');
+
+// Dark (Ominous, Sinister) Grim, gothic, and foreboding locations
+var darkPrefixes = [
+  'Grim', 'Dread', 'Shadow', 'Night', 'Blood', 'Crypt', 
+  'Wraith', 'Gloom', 'Raven', 'Bone', 'Fell', 'Ash', 
+  'Ebon', 'Sable', 'Void', 'Mal', 'Necro', 'Styg', 
+  'Sin', 'Hell', 'Doom', 'Blight', 'Mourn', 'Ruin'
+];
+var darkMiddles = [
+  'en', 'or', 'eth', 'ar', 'ith', 'un', 'az', 'ul', 
+  'om', 'yr', 'eb', 'og', 'is', 'ak', 'urn', 'ab', 
+  'id', 'ox', 'ex', 'ang', 'oth', 'uz', 'ir', 'mor'
+];
+var darkSuffixes = [
+  'hold', 'grave', 'maw', 'rift', 'shade', 'spire', 
+  'gorge', 'veil', 'pit', 'wrath', 'skull', 'fen', 
+  'moor', 'tomb', 'lair', 'void', 'dusk', 'blight', 
+  'crypt', 'depth', 'hollow', 'sunder', 'wastes', 'gulf'
+];
+
+// More Dark (Ominous, Sinister) - Adding forbidding elements
+darkPrefixes.push('Blight', 'Curse', 'Foul', 'Hate', 'Rend', 'Vex');
+darkMiddles.push('bar', 'dol', 'grot', 'hul', 'mor', 'vyr');
+darkSuffixes.push('abyss', 'cairn', 'dread', 'gash', 'ruin', 'veil');
 
 // Descriptors for descriptive elements
 var descriptors = ['Great', 'Lost', 'Forbidden', 'Ancient', 'Mystic', 'Sacred'];
+var darkDescriptors = ['Cursed', 'Haunted', 'Wretched', 'Bleak', 'Tormented'];
 
 // Generates a fantasy location name
 function GenerateLocationName(wordCount = 1, culture = 'mixed') {
@@ -954,6 +966,10 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
     prefixes = humanPrefixes.filter(isPronounceable);
     middles = humanMiddles.filter(isPronounceable);
     suffixes = humanSuffixes.filter(isPronounceable);
+  } else if (culture === 'dark') {
+    prefixes = darkPrefixes.filter(isPronounceable);
+    middles = darkMiddles.filter(isPronounceable);
+    suffixes = darkSuffixes.filter(isPronounceable);
   } else {
     prefixes = Pick(locPrefixesFilteredSets);
     middles = Pick(locMiddlesFilteredSets);
@@ -1006,7 +1022,9 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
   }
 
   // Optional descriptive element (20% chance, one per name)
-  if (Math.random() < 0.2) {
+  if (culture === 'dark' && Math.random() < 0.2) {
+    result = Pick(darkDescriptors) + ' ' + result;
+  } else if (Math.random() < 0.2) {
     let descriptor = Pick(descriptors);
     result = descriptor + ' ' + result; // Always add a space after descriptor
   }

@@ -745,7 +745,7 @@ function diplomaticMission() {
 	let result = Pick(K.moreVerbs) + " and " + Pick(K.Verbs) + " " + Indefinite(GenerateItemPrefix(),1) + " " + Split(Pick(Random(2) === 0 ? K.Races : K.Monsters),0) + 
 	(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + " " + 
 	(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) + 
-	Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human']));
+	Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 	return result;
 }
 

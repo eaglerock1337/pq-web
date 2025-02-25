@@ -971,7 +971,7 @@ var descriptors = ['Great', 'Lost', 'Forbidden', 'Ancient', 'Mystic', 'Sacred'];
 var darkDescriptors = ['Cursed', 'Haunted', 'Wretched', 'Bleak', 'Tormented'];
 
 // Generates a fantasy location name
-function GenerateLocationName(wordCount = 1, culture = 'mixed') {
+function GenerateLocationName(wordCount = 1, culture = 'mixed', disableDescriptor = false) {
 // Example usage
 //GenerateLocationName();       // Single-word name
 //GenerateLocationName(2);      // Two-word name
@@ -1048,12 +1048,15 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
     lastSeparator = separator;
   }
 
+  // Zero chance if argument provided
+  if (!disableDescriptor) {
   // Optional descriptive element (20% chance, one per name)
-  if (culture === 'dark' && Math.random() < 0.2) {
-    result = Pick(darkDescriptors) + ' ' + result;
-  } else if (Math.random() < 0.2) {
-    let descriptor = Pick(descriptors);
-    result = descriptor + ' ' + result; // Always add a space after descriptor
+	if (culture === 'dark' && Math.random() < 0.2) {
+	result = Pick(darkDescriptors) + ' ' + result;
+	} else if (Math.random() < 0.2) {
+	let descriptor = Pick(descriptors);
+	result = descriptor + ' ' + result; // Always add a space after descriptor
+	}
   }
 
   // Cleanup: remove trailing separators or spaces
@@ -1074,6 +1077,273 @@ function coolPlace() {
 	return Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
 	GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 }
+
+//--------------
+//TESTING----   will probalby switch to have the items pick from K.xyz lists in future.  Does the "legendary" function replace all this??
+// Word lists for items
+const itemAdjectives = [
+    "Golden", "Silver", "Iron", "Steel", "Bronze",
+    "Enchanted", "Cursed", "Mystic", "Ancient", "Legendary",
+    "Swift", "Mighty", "Powerful", "Glowing", "Shimmering",
+    // Additional from K.ItemAttrib
+    "Spectral", "Astral", "Blessed", "Bewitched", "Arcane"
+];
+
+const itemNouns = [
+    "Sword", "Axe", "Dagger", "Mace", "Hammer", "Blade",
+    "Shield", "Helmet", "Breastplate", "Gauntlets", "Boots",
+    "Ring", "Amulet", "Pendant", "Crown", "Scepter",
+    "Potion", "Scroll", "Tome", "Wand", "Staff",
+    // Additional from K.Specials
+    "Orb", "Talisman", "Sceptre", "Gemstone", "Phial"
+];
+
+const itemModifiers = [
+    "of the Dragon", "of the Phoenix", "of the Unicorn",
+    "of Swiftness", "of Strength", "of Wisdom",
+    "of Fire", "of Ice", "of Lightning", "of the Windseeker",
+    "of the Ancients", "of the Gods", "of the Titans",
+    // Additional from K.ItemOfs
+    "of Chaos", "of Silence", "of Foreshadowing", "of Joy"
+];
+
+// Word lists for spells
+const spellVerbs = [
+    "Summon", "Invoke", "Conjure", "Cast", "Create",
+    "Destroy", "Protect", "Heal", "Enchant", "Curse",
+    // Additional from K.spellVerbs
+    "Unleash", "Harness", "Master"
+];
+
+const spellNouns = [
+    "Fire", "Ice", "Lightning", "Earth", "Wind",
+    "Dragon", "Demon", "Angel", "Spirit", "Elemental",
+    "Shield", "Aura", "Bolt", "Beam", "Wave",
+    "Invisibility", "Teleportation", "Levitation", "Haste", "Slow",
+    // Additional inspired by K.Spells
+    "Miasma", "Illusion", "Confusion", "Venom"
+];
+
+const spellAdjectives = [
+    "Mighty", "Greater", "Lesser", "Arcane", "Divine",
+    "Eldritch", "Mystic", "Powerful", "Weak", "Ancient",
+    // Additional from K.ItemAttrib
+    "Sacred", "Forbidden", "Prismatic"
+];
+
+function choosePattern(patterns, probabilities) {
+    if (!patterns || patterns.length === 0) return "Unnamed Item";
+    if (!probabilities || probabilities.length === 0) return patterns[Random(patterns.length)]();
+
+    const numPatterns = patterns.length;
+    const numProbs = probabilities.length;
+    const totalProvidedWeight = probabilities.reduce((sum, p) => sum + Math.max(0, p), 0) || 1;
+    const normalizedProbs = new Array(numPatterns);
+
+    // Distribute weight proportionally
+    if (numProbs <= numPatterns) {
+        const baseWeight = totalProvidedWeight / numPatterns;
+        for (let i = 0; i < numPatterns; i++) {
+            normalizedProbs[i] = i < numProbs ? probabilities[i] : baseWeight;
+        }
+    } else {
+        // More probs than patterns: use first few and scale
+        for (let i = 0; i < numPatterns; i++) {
+            normalizedProbs[i] = probabilities[i];
+        }
+    }
+
+    const totalWeight = normalizedProbs.reduce((sum, p) => sum + p, 0);
+    let rand = Math.random() * totalWeight;
+
+    for (let i = 0; i < numPatterns; i++) {
+        if (rand < normalizedProbs[i]) return patterns[i]();
+        rand -= normalizedProbs[i];
+    }
+    return patterns[patterns.length - 1]();
+}
+
+// Generate treasure name (more elaborate or unique)
+function generateObjectName() {
+	var uniqueTreasureName = Random(2) === 0 ? 	GenerateNameNew(1, Pick(['human', 'dwarvish', 'elvish', 'dark'])) : GenerateLocationName(1, Pick(['mixed', 'human', 'dwarvish', 'elvish', 'dark']), true); // e.g, "Grimmaw", "Durandal";
+	
+	const patterns = [
+        () => Pick(itemNouns),                                // e.g., "Sword"
+		() => Pick(itemAdjectives) + " " + Pick(itemNouns),   // e.g., "Mystic Wand"
+		() => Pick(itemNouns) + " " + Pick(itemModifiers),    // e.g., "Scepter of Fire"
+		() => Pick(itemAdjectives) + " " + Pick(itemNouns) + " " + Pick(itemModifiers), // e.g., "Legendary Crown of the Gods"
+		() => uniqueTreasureName + ', ' + Pick(itemAdjectives) + " " + Pick(itemNouns) + " " + Pick(itemModifiers) // e.g., "Durandal, Legendary Crown of the Gods"
+	];
+	const probabilities = [0.35, 0.30, 0.20, 0.10, 0.05]; // Favor junk items.
+	return choosePattern(patterns, probabilities);
+}
+
+// Generate spell name
+function generateSpellName() {
+    const patterns = [
+        () => Pick(spellVerbs) + " " + Pick(spellNouns),      // e.g., "Summon Dragon"
+        () => Pick(spellNouns) + " of " + Pick(spellNouns),   // e.g., "Bolt of Lightning"
+        () => Pick(spellAdjectives) + " " + Pick(spellNouns), // e.g., "Mighty Fire"
+        () => Pick(spellNouns)                                // e.g., "Invisibility"
+    ];
+    const probabilities = [0.3, 0.3, 0.3, 0.1]; // Single nouns less common
+    return choosePattern(patterns, probabilities);
+}
+
+//----EPIC
+// Function to generate legendary item names with optional type and rarity
+// Function to generate legendary item names with optional type and rarity
+function generateLegendaryItemName(type = null, rarity = null) {
+    // Prefix options with type tracking
+    const prefixOptions = [
+        { type: 'name', func: () => (Random(2) === 0 ? GenerateNameNew(Pick([1,2]), Pick(['human', 'dwarvish', 'elvish', 'dark'])) : GenerateLocationName(Pick([1,2]), Pick(['mixed', 'human', 'dwarvish', 'elvish', 'dark']), true)) }, // e.g., "Thunderfury"
+        { type: 'attrib', func: () => Pick(K.ItemAttrib) },            // e.g., "Golden"
+        { type: 'special', func: () => Pick(K.Specials) },             // e.g., "Orb"
+        { type: 'possessive', func: () => Pick(K.ImpressiveTitles) }   // e.g., "King"
+    ];
+
+    // Handle prefix selection based on rarity
+    let selectedPrefix, prefix, prefixType;
+    if (rarity === 'unique') {
+        // For 'unique', always include a generated name, optional title
+        const generatedName = Random(2) === 0 ? GenerateNameNew(Pick([1,2]), Pick(['human', 'dwarvish', 'elvish', 'dark'])) : GenerateLocationName(Pick([1,2]), Pick(['mixed', 'human', 'dwarvish', 'elvish', 'dark']), true);
+        const useTitle = Random(2) === 0; // 50% chance for title
+        if (useTitle) {
+            const title = Pick(K.ImpressiveTitles); // e.g., "Viceroy"
+            const fullName = `${title} ${generatedName}`;
+            prefix = Random(2) === 0 ? splitName(fullName) : fullName; // 50% chance to trim with title
+        } else {
+            prefix = Random(10) === 0 ? splitName(generatedName) : generatedName; // 10% chance to trim without title
+        }
+        prefixType = 'possessive';
+    } else {
+        const prefixChance = rarity === 'legendary' ? 4 : rarity === 'epic' ? 20 : rarity === 'rare' || rarity === 'common' ? 2 : 4; // 25% for 'legendary', 5% for 'epic', 50% for 'rare'/'common', 25% default
+        selectedPrefix = Random(prefixChance) === 0 ? prefixOptions[Random(prefixOptions.length)] : null;
+        if (selectedPrefix && selectedPrefix.type === 'possessive' && (rarity === 'rare' || rarity === 'common')) {
+            selectedPrefix = prefixOptions[Random(2)]; // Force attrib or special for 'rare'/'common'
+        }
+        prefix = selectedPrefix ? selectedPrefix.func() : '';
+        prefixType = selectedPrefix ? selectedPrefix.type : '';
+    }
+
+    // Adjective from K.ItemAttrib (capitalize first letter)
+    let adjective = ProperCase(Pick(K.ItemAttrib));
+
+    // Noun selection based on type
+    let nounOptions;
+    switch (type) {
+        case 'weapon':
+            nounOptions = K.Weapons.map(w => w.split('|')[0]); // e.g., "Sword", "Axe"
+            break;
+        case 'armor':
+            nounOptions = K.Armors.map(a => a.split('|')[0]); // e.g., "Chainmail", "Plate"
+            break;
+        case 'shield':
+            nounOptions = K.Shields.map(s => s.split('|')[0]); // e.g., "Pie Plate", "Buckler"
+            break;
+        case 'accessory':
+            nounOptions = K.Specials.filter(s => !['Sword', 'Axe', 'Shield'].includes(s)); // e.g., "Ring", "Amulet"
+            break;
+        case 'spell':
+            nounOptions = K.Spells; // e.g., "Fireball", "Invisibility"
+            break;
+        case '':
+        case null:
+            nounOptions = [
+                ...K.Specials,
+                ...K.BoringItems.map(item => Random(2) === 0 ? ProperCase(item) : `${ProperCase(Pick(K.ItemAttrib))} ${ProperCase(item)}`)
+            ];
+            break;
+        default:
+            nounOptions = [
+                ...K.Specials,
+                ...K.BoringItems.map(item => Random(2) === 0 ? ProperCase(item) : `${ProperCase(Pick(K.ItemAttrib))} ${ProperCase(item)}`)
+            ];
+            break;
+    }
+    let noun = Pick(nounOptions);
+
+    // Avoid redundant adjective-noun pairs
+    if (adjective.toLowerCase() === noun.toLowerCase()) {
+        noun = Pick(nounOptions);
+    }
+
+    // Suffix from K.ItemOfs or a generated one
+    const suffixOptions = [
+        ...K.ItemOfs.map(s => s.startsWith('of ') ? s : `of ${s}`),
+        `of ${(Random(2) === 0 ? GenerateNameNew(Pick([1,2]), Pick(['human', 'dwarvish', 'elvish', 'dark'])) : GenerateLocationName(Pick([1,2]), Pick(['mixed', 'human', 'dwarvish', 'elvish', 'dark']), true))}`,
+        `of the ${ProperCase(Pick(K.Specials))}`,
+        `of ${ProperCase(Pick(K.Monsters).split('|')[0])}`
+    ];
+    const suffix = Pick(suffixOptions);
+
+    // Patterns for legendary names with conditional separators
+    const basePatterns = [
+        () => {
+            if (prefix) {
+                if (prefixType === 'name') {
+                    return `${prefix}, ${adjective} ${noun} ${suffix}`; // Comma for unique names
+                } else if (prefixType === 'possessive') {
+                    const titleOnly = prefix.split(' ')[0]; // e.g., "King" from "King Glomclaw"
+                    const possessiveTitle = titleOnly.toLowerCase().endsWith('s') ? `${titleOnly}'` : `${titleOnly}'s`; // "Boss'" or "King's"
+                    return Random(2) === 0 ? `${prefix}'s ${adjective} ${noun} ${suffix}` : `The ${possessiveTitle} ${adjective} ${noun} ${suffix}`;
+                } else {
+                    return `${prefix} ${adjective} ${noun} ${suffix}`; // Space for attributes/specials
+                }
+            } else {
+                return `${adjective} ${noun} ${suffix}`;
+            }
+        },
+        () => `${adjective} ${noun} ${suffix}`,
+        () => {
+            if (prefix) {
+                if (prefixType === 'possessive') {
+                    const titleOnly = prefix.split(' ')[0];
+                    const possessiveTitle = titleOnly.toLowerCase().endsWith('s') ? `${titleOnly}'` : `${titleOnly}'s`;
+                    return Random(2) === 0 ? `${prefix}'s ${adjective} ${noun}` : `The ${possessiveTitle} ${adjective} ${noun}`;
+                } else {
+                    return `${prefix}-${adjective} ${noun}`; // Hyphen for non-possessives
+                }
+            } else {
+                return `${adjective} ${noun}`;
+            }
+        },
+        () => `${noun} ${suffix}`
+    ];
+
+    // Adjust patterns and probabilities based on rarity (minimum complexity)
+    let patterns = basePatterns;
+    let probabilities;
+    switch (rarity) {
+        case 'common':
+            patterns = basePatterns.slice(1, 2); // Only adjective + noun + suffix
+            probabilities = [1.0]; // Ensure "magic property"
+            break;
+        case 'rare':
+            patterns = basePatterns.slice(0, 1); // Only most complex, no titles
+            probabilities = [1.0];
+            break;
+        case 'epic':
+            patterns = basePatterns.slice(0, 1); // Only most complex
+            probabilities = [1.0];
+            break;
+        case 'legendary':
+            patterns = basePatterns.slice(0, 1); // Only most complex
+            probabilities = [1.0];
+            break;
+        case 'unique':
+            patterns = basePatterns.slice(0, 1); // Only most complex
+            probabilities = [1.0];
+            break;
+        default:
+            probabilities = [0.4, 0.3, 0.2, 0.1]; // Default behavior
+            break;
+    }
+
+    return choosePattern(patterns, probabilities);
+}
+//----TESTING
+//--------------
 
 
 function LocalStorage() {
@@ -1565,7 +1835,8 @@ K.Spells = [
   "Corporate Espionage",
   "Infinite Confusion",
   "Release the Kraken",
-  "French Taunting"];
+  "French Taunting",
+  "Thunderfury"];
 
 K.OffenseAttrib = [
   "Polished|+1",
@@ -1771,7 +2042,8 @@ K.Specials = [
   "Hot Dog",
   "Submarine Sandwitch",
   "Club Sandwitch",
-  "BLT"];
+  "BLT",
+  "Gothic Plate"];
 
 K.ItemAttrib = [
   "Golden",
@@ -1872,7 +2144,10 @@ K.ItemAttrib = [
   "Pepperoni",
   "Provolone",
   "Pepper-Jack",
-  "Swiss"];
+  "Swiss",
+  "Godly",
+  "Invisibility",
+  "Thunder"];
 
 K.ItemOfs = [
   "Hamhock",
@@ -1955,7 +2230,11 @@ K.ItemOfs = [
   "Corpulence",
   "the Cloud",
   "Emotional Damage",
-  "Emotional Support"];
+  "Emotional Support",
+  "the Whale",
+  "Diplomatic Immunity",
+  "Fury",
+  "the Windseeker"];
 
 K.BoringItems = [
   "app",
@@ -2042,7 +2321,15 @@ K.BoringItems = [
   "hdmi cable",
   "clock",
   "smart watch",
-  "chromebook"];
+  "chromebook",
+  "plate",
+  "dish",
+  "bowl",
+  "cup",
+  "spoon",
+  "fork",
+  "knife",
+  "blade"];
 
 K.Monsters = [
   "Anhkheg|6|chitin,acid",

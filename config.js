@@ -1066,6 +1066,15 @@ function coolName() {
 	(Random(2) === 0 ? "" : ", " + (Random(2) === 0 ?Pick(K.SuffixTitles) : toRoman((weightedRandom(42,0.07)+1))));
 }
 
+function coolItem() {
+	return (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
+}
+
+function coolPlace() {
+	return Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
+	GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
+}
+
 
 function LocalStorage() {
   this.getItem = function (key, callback) {
@@ -1376,6 +1385,11 @@ K.Verbs = [
   "Seize",
   "Audit",
   "Dismantle"];
+  
+K.connectingPhrases = [
+  " and ",
+  " and then ",
+  ". There, you will "];
 
 K.moreVerbs = [
   "Seek an audience with",
@@ -1415,13 +1429,15 @@ K.spellVerbs = [
   "Summoned the wrath of",
   "Unleashed the fury of",
   "Harnessed the power of"];
+
+K.travelVerbs = [
+  "Go to",
+  "Venture forth to",
+  "Seek ye",
+  "Journey to",
+  "Travel to"];
   
 K.fuzzyLocations = [
-//prefixes
-/*  "at",
-  "around",
-  "near"
-*/
   "ocean",
   "lake",
   "pond",
@@ -1749,7 +1765,12 @@ K.Specials = [
   "Codex",
   "Source Code",
   "Memory Card",
-  "Rain Napper"];
+  "Rain Napper",
+  "Pizza",
+  "Hot Dog",
+  "Submarine Sandwitch",
+  "Club Sandwitch",
+  "BLT"];
 
 K.ItemAttrib = [
   "Golden",
@@ -1841,9 +1862,20 @@ K.ItemAttrib = [
   "Service",
   "Docusigned",
   "Forbidden",
-  "Rogue"];
+  "Rogue",
+  "Turkey",
+  "Salami",
+  "Ham",
+  "Roast Beef",
+  "Proscuito",
+  "Pepperoni",
+  "Provolone",
+  "Pepper-Jack",
+  "Swiss"];
 
 K.ItemOfs = [
+  "Hamhock",
+  "Cheese",
   "Foreboding",
   "Foreshadowing",
   "Nervousness",
@@ -1925,9 +1957,14 @@ K.ItemOfs = [
   "Emotional Support"];
 
 K.BoringItems = [
+  "app",
+  "application",
   "tape",
   "nail",
   "lunchpail",
+  "sandwitch",
+  "BLT",
+  "pizza",
   "sock",
   "token",
   "review",
@@ -1974,6 +2011,7 @@ K.BoringItems = [
   "ladder",
   "chicken",
   "twig",
+  "installer",
   "dirtclod",
   "counterpane",
   "vest",

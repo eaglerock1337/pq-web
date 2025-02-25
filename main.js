@@ -198,7 +198,7 @@ function sideQuestStorySample() {
 	let sideQuestDest = Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
 		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 	return 'You are approached by ' + sideQuestNPC + ', who tells you of a great treasure' + sideQuestDest +
-	'.  "You seek the ' + sideQuestItm + " of " + Pick(K.ItemOfs) + '".  You agree and set out on your journey...  ' +
+	'.  "You seek the ' + sideQuestItm + '".  You agree and set out on your journey...  ' +
 	'You reach your destination and find...  ...nothing.  You begin to make your way back home.  You quicky find ' + splitName(sideQuestNPC) + 
 	' who apologizes for wasting your time.  Not before you rattle some gold out of them!';
 }
@@ -754,10 +754,15 @@ function randomTask() {
 
 function diplomaticMission() {
 	let result = Pick(K.moreVerbs) + " and " + Pick(K.Verbs) + " " + Indefinite(GenerateItemPrefix(),1) + " " + Split(Pick(Random(2) === 0 ? K.Races : K.Monsters),0) + 
-	(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + " " + 
-	(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) + 
+	(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + 
+	(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) + " " + Pick(K.spellTargets) + ' ' +
 	Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 	return result;
+}
+
+function randomTaskToo() {
+	return Pick(K.travelVerbs) + ' ' + coolPlace() + Pick(K.connectingPhrases) + Pick(K.moreVerbs) + ' ' + coolName() + 
+		(Random(2) === 0 ? ".  Then " : " and ") + Pick(K.Verbs) + ' ' + coolItem() + '.';
 }
 
 function WinItem() {
@@ -869,12 +874,12 @@ function CompleteQuest() {
     caption = 'Purchase ' + Indefinite(BoringItem(), (Random(100) + 1));
     break;
   case 17:
-    caption = randomTask();
+    caption = Random(2) === 0 ? randomTask() : randomTaskToo();
     break;
   case 18:
     caption = diplomaticMission();
     break;
-  case 19:
+  case 19: //is this working correctly???
     caption = "Side Quest: Title TBD";
     doSideQuest();
     break;

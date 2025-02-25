@@ -78,7 +78,7 @@ cheat("$$$", addScaledGold());
   
   cheat("RandomTask (for fun)", function () {
 	var result;
-	result = Random(2) === 0 ? randomTask() : diplomaticMission();
+	result = Random(2) === 0 ? (Random(2) === 0 ? randomTask() : randomTaskToo()) : (Random(2) === 0 ? diplomaticMission() : sideQuestStorySample());
     console.log(result);
   });
 }

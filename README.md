@@ -2,8 +2,6 @@
 
 This is a fork of the original [progressquest.com](https://progressquest.com) website by [Erik Fredricksen](https://github.com/grumdrig). This repository was obtained from [his repo on Bitbucket](https://bitbucket.org/grumdrig/pq-web).
 
-In absence of a license from the original creator, I'm opting to use a BSD 3-clause license, but will defer to any choice of license of Erik Fredricksen.
-
 ## Setup
 
 More to come!

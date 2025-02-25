@@ -746,7 +746,9 @@ function randomTask() {
     var preposition1 = Random(2) === 0 ? 'of' : 'from';
     var preposition2 = Random(2) === 0 ? 'of' : 'from';
 
-    result = verb + ' ' + itemFunction(ProperCase(firstItemFunction()), quantity) + ' ' + preposition1 + ' the ' + secondItemFunction() + ' ' + preposition2 + ' ' + Pick(K.ImpressiveTitles) + ' ' + GenerateNameNew(Pick([1,2]), Pick(['mixed','elvish','dwarvish','human'])) + ', ' + Pick(K.KlassTitles) + ' ' + Split(Pick(K.Klasses), 0) + ' of the ' + Plural(Split(Pick(target), 0));
+    result = verb + ' ' + itemFunction(ProperCase(firstItemFunction()), quantity) + ' ' + preposition1 + ' the ' + secondItemFunction() + ' ' + 
+		preposition2 + ' ' + Pick(K.ImpressiveTitles) + ' ' + GenerateNameNew(Pick([1,2]), Pick(['mixed','elvish','dwarvish','human'])) + ', ' +
+		Pick(K.KlassTitles) + ' ' + Split(Pick(K.Klasses), 0) + ' of the ' + Plural(Split(Pick(target), 0)) + '.';
 
     return result;
 }
@@ -754,9 +756,11 @@ function randomTask() {
 
 function diplomaticMission() {
 	let result = Pick(K.moreVerbs) + " and " + Pick(K.Verbs) + " " + Indefinite(GenerateItemPrefix(),1) + " " + Split(Pick(Random(2) === 0 ? K.Races : K.Monsters),0) + 
-	(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + 
-	(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) + " " + Pick(K.spellTargets) + ' ' +
-	Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
+		(Random(2) === 0 ? " that has " : " who has ") + Pick(K.spellVerbs) + ' ' +
+		(Random(2) === 0 ? Indefinite(Pick(K.Spells),(Random(42)+1)) : Definite(Pick(K.Spells),(Random(2)+1))) + " of " + Pick(K.ItemOfs) +
+		(Random(2) === 0 ? "": Pick(K.spellTargets)) +
+		Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
+		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark'])) + '.';
 	return result;
 }
 

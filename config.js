@@ -1464,20 +1464,21 @@ K.fuzzyLocations = [
   "valley",
   "basin",
   "glade"
-//add chance for plaurals
+//add chance for plaurals?
 ];
-  
+
+//A better way to deal with punctuation in this situatation, I know not. 
 K.spellTargets = [
-  "upon a small village",
-  "across the land",
-  "aided by the power of an unseen enemy",
-  "by an unknown power",
-  "via an unknown force",
-  "within the ancient ruins",
-  "through the mystical portal",
-  "under the full moon",
-  "in the heart of the forest",
-  "at the break of dawn"];
+  " upon a small village",
+  " across the land",
+  ", aided by the power of an unseen enemy,",
+  ", by an unknown power,",
+  ", via an unknown force,",
+  " within the ancient ruins",
+  " through the mystical portal",
+  " under the full moon",
+  " in the heart of the forest",
+  " at the break of dawn"];
 
 K.Equips = [
   "Weapon",

@@ -177,19 +177,30 @@ function doSideQuest() {
 	let sideQuestItm = (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
 	let sideQuestDest = Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + 
 		ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
-		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human']));
+		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 	Q('task|10|You are approached by ' + coolName() + ', who tells you of a great treasure' + sideQuestDest);
 	Q('task|5|"You seek the "' + sideQuestItm + '...');
 	Q('task|2|You agree and set out on your journey...');
 	Q('task|5|You reach your destination and find...');
 	//---todo add some additional outcomes...
 	Q('task|2|...nothing.  You begin to make your way back home.');
-	Q('task|4|You quicky find ' + sideQuestNPC + ' who appologizes for wasting your time.');
+	Q('task|4|You quicky find ' + sideQuestNPC + ' who apologizes for wasting your time.');
 	Q('task|4|Not before you rattle some gold out of them!');
 	addScaledGold();
 	//---todo add incremental quest completion?
 	QuestBar.reposition(QuestBar.Max());
     TaskBar.reposition(TaskBar.Max());
+}
+
+function sideQuestStorySample() {
+	let sideQuestNPC = coolName();
+	let sideQuestItm = (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
+	let sideQuestDest = Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
+		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
+	return 'You are approached by ' + sideQuestNPC + ', who tells you of a great treasure' + sideQuestDest +
+	'.  "You seek the ' + sideQuestItm + " of " + Pick(K.ItemOfs) + '".  You agree and set out on your journey...  ' +
+	'You reach your destination and find...  ...nothing.  You begin to make your way back home.  You quicky find ' + splitName(sideQuestNPC) + 
+	' who apologizes for wasting your time.  Not before you rattle some gold out of them!';
 }
 
 

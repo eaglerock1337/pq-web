@@ -236,6 +236,33 @@ function GenerateName() {
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
+function splitName(name) {
+    // Combine all title arrays
+    const allTitles = [...K.Titles, ...K.ImpressiveTitles, ...K.KlassTitles];
+    
+    // Split the name into parts
+    const parts = name.trim().split(' ');
+    
+    // Check if the first part is a title
+    const hasTitle = allTitles.includes(parts[0]);
+    
+    if (hasTitle) {
+        // If there's a comma, take only the title and first name part before comma
+        if (name.includes(',')) {
+            const beforeComma = name.split(/, ?/)[0].trim().split(' ');
+            return `${beforeComma[0]} ${beforeComma[1]}`; // Return title + first name
+        }
+        // If no comma, return title plus first name (first two parts)
+        return parts.slice(0, 2).join(' ');
+    } else {
+        // If no title and has comma, return just first part before comma
+        if (name.includes(',')) {
+            return name.split(/, ?/)[0].trim().split(' ')[0];
+        }
+        // If no title and no comma, return just first part
+        return parts[0];
+    }
+}
 
 // Returns true if the character is a vowel.
 function isVowel(char) {
@@ -1036,7 +1063,7 @@ function GenerateLocationName(wordCount = 1, culture = 'mixed') {
 
 function coolName() {
 	return (Random(2) === 0 ? Pick(K.Titles) + " " : "") + GenerateNameNew(Pick([1,2])) + 
-	(Random(2) === 0 ? "" : ", " + (Random(2) === 0 ?Pick(K.SuffixTitles) : toRoman((weightedRandom(100,0.14)+1))));
+	(Random(2) === 0 ? "" : ", " + (Random(2) === 0 ?Pick(K.SuffixTitles) : toRoman((weightedRandom(42,0.07)+1))));
 }
 
 

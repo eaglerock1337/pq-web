@@ -253,22 +253,22 @@ function generateSideQuest() {
 
   // Substitute placeholders in the outcome upfront
   const outcome = rawOutcome
+    .replace("$NPCTOO", npc2)
     .replace("$NPC", npc)
-    .replace("$NPC2", npc2)
     .replace("$ITEM", item)
+    .replace("$LOCATIONTOO", location2)
     .replace("$LOCATION", location)
-    .replace("$LOCATION2", location2)
     .replace("$TOWN", town)
     .replace("$MOUNT_DOOM", mountDoom)
     .replace("$MONSTER", monster)
     .replace("$TARGET", target);
 
   const steps = template.steps.map(step =>
-    step.replace("$NPC", npc)
-		.replace("$NPC2", npc2)
+	step.replace("$NPCTOO", npc2)
+		.replace("$NPC", npc)
         .replace("$ITEM", item)
+		.replace("$LOCATIONTOO", location2)
         .replace("$LOCATION", location)
-		.replace("$LOCATION2", location2)
 		.replace("$TOWN", town)
 		.replace("$MOUNT_DOOM", mountDoom)
         .replace("$MONSTER", monster)
@@ -277,11 +277,11 @@ function generateSideQuest() {
   );
 
   const questName = template.nameTemplate
+    .replace("$NPCTOO", npc2.split(" ")[0])
     .replace("$NPC", npc.split(" ")[0])
-    .replace("$NPC2", npc2.split(" ")[0])
     .replace("$ITEM", item)
+    .replace("$LOCATIONTOO", location2)
     .replace("$LOCATION", location)
-    .replace("$LOCATION2", location2)
     .replace("$TOWN", town)
     .replace("$MOUNT_DOOM", mountDoom)
     .replace("$MONSTER", monster)

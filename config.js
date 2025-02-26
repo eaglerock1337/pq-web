@@ -2975,17 +2975,17 @@ const sideQuestTemplates = [
       "You embark on a long journey with your loyal companions...",
       "You traverse the dangerous $LOCATION, facing many perils...",
       "You reach $TOWN, where you rest and gather supplies...",
-      "You continue your journey through the treacherous $LOCATION2...",
+      "You continue your journey through the treacherous $LOCATIONTOO...",
       "You encounter $MONSTER, who tries to take the ring...",
       "You narrowly escape and press on towards $MOUNT_DOOM...",
       "You climb the steep slopes of $MOUNT_DOOM, battling exhaustion...",
-      "At the summit, you prepare to destroy the ring, but $NPC2 appears to stop you...",
+      "At the summit, you prepare to destroy the ring, but $NPCTOO appears to stop you...",
       "A dramatic confrontation ensues...",
       "$OUTCOME"
     ],
     outcomes: [
       "You cast the ring into the fire! It is destroyed forever!",
-      "$NPC2 steals the ring and escapes, leaving you in despair.",
+      "$NPCTOO steals the ring and escapes, leaving you in despair.",
       "The ring slips from your grasp but falls into the fires accidentally!"
     ],
 	rewards: [

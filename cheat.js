@@ -81,4 +81,10 @@ cheat("$$$", addScaledGold());
 	result = Random(2) === 0 ? (Random(2) === 0 ? randomTask() : randomTaskToo()) : (Random(2) === 0 ? diplomaticMission() : sideQuestStorySample());
     console.log(result);
   });
+  
+  // New Side Quest button
+  cheat("Side Quest", function () {
+    doSideQuest();
+    console.log("Side Quest queued: " + game.bestquest);
+  });
 }

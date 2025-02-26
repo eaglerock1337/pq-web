@@ -146,6 +146,12 @@ function weightedRandom(n, weight=0.5) {
     return Math.floor(weighted * n);
 }
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 
 function Pick(a) {
   return a[Random(a.length)];
@@ -1078,6 +1084,16 @@ function coolPlace() {
 	GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 }
 
+function fuzzyPlace() {
+  const location = ProperCase(Pick(K.fuzzyLocations));
+  const qty = location.toLowerCase() === 'town' ? (Random(5) === 0 ? 2 : 1) : (Random(2) + 1); // 20% "towns"
+  return Definite(GenerateItemPrefix() + " " + location, qty);
+}
+
+function namedPlace() {
+	return GenerateLocationName(weightedRandom(2,0)+1, Pick(['mixed','elvish','dwarvish','human','dark']));
+}
+
 //--------------
 //TESTING----   will probalby switch to have the items pick from K.xyz lists in future.  Does the "legendary" function replace all this??
 // Word lists for items
@@ -1192,7 +1208,6 @@ function generateSpellName() {
 
 //----EPIC
 // Function to generate legendary item names with optional type and rarity
-// Function to generate legendary item names with optional type and rarity
 function generateLegendaryItemName(type = null, rarity = null) {
     // Prefix options with type tracking
     const prefixOptions = [
@@ -1212,10 +1227,11 @@ function generateLegendaryItemName(type = null, rarity = null) {
             const title = Pick(K.ImpressiveTitles); // e.g., "Viceroy"
             const fullName = `${title} ${generatedName}`;
             prefix = Random(2) === 0 ? splitName(fullName) : fullName; // 50% chance to trim with title
+			prefixType = 'possessive';
         } else {
             prefix = Random(10) === 0 ? splitName(generatedName) : generatedName; // 10% chance to trim without title
+			prefixType = 'name';
         }
-        prefixType = 'possessive';
     } else {
         const prefixChance = rarity === 'legendary' ? 4 : rarity === 'epic' ? 20 : rarity === 'rare' || rarity === 'common' ? 2 : 4; // 25% for 'legendary', 5% for 'epic', 50% for 'rare'/'common', 25% default
         selectedPrefix = Random(prefixChance) === 0 ? prefixOptions[Random(prefixOptions.length)] : null;
@@ -1656,11 +1672,6 @@ K.Verbs = [
   "Audit",
   "Dismantle"];
   
-K.connectingPhrases = [
-  " and ",
-  " and then ",
-  ". There, you will "];
-
 K.moreVerbs = [
   "Seek an audience with",
   "Consult",
@@ -1687,7 +1698,8 @@ K.moreVerbs = [
   "Infiltrate",
   "Rescue",
   "Imprison",
-  "Liberate"];
+  "Liberate",
+  "Subdue"];
 
 K.spellVerbs = [
   "Performed the Forbidden Dance of",
@@ -1700,12 +1712,59 @@ K.spellVerbs = [
   "Unleashed the fury of",
   "Harnessed the power of"];
 
+K.connectingPhrases = [
+  " to ",
+  " and ",
+  " and then ",
+  ". There, you will "];
+
+K.connectingPhrasesAlt = [
+  " to ",
+  " near ",
+  " around ",
+  " over ",
+  " under ",
+  " past ",
+  " beyond "
+  ];
+  
+K.Directions = [ "north", "south", "west", "east" ];
+
 K.travelVerbs = [
   "Go to",
   "Venture forth to",
   "Seek ye",
   "Journey to",
   "Travel to"];
+
+K.travelVerbsAlt = [
+  "Journey",
+  "Trek",
+  "Venture forth",
+  "March",
+  "Next",
+  "Onward, travel",
+  "Then",
+  "From there"];
+
+K.travelUnitsOfMeasure  = [
+  "digit",
+  "tomme",
+  "inch",
+  "foot",
+  "kadam",
+  "kvarter",
+  "pace",
+  "cubit",
+  "yard",
+  "metre",
+  "fathom",
+  "perch",
+  "block",
+  "klick",
+  "furlong",
+  "mile",
+  "league"];
   
 K.fuzzyLocations = [
   "ocean",
@@ -1728,13 +1787,14 @@ K.fuzzyLocations = [
   "town",
   "hollow",
   "brush",
-  "woods",
+  "wood",
   "forest",
   "cliff",
   "valley",
   "basin",
-  "glade"
-//add chance for plaurals?
+  "glade",
+  "veil"
+//add chance for plaurals?  i think the existing definite,indefinite,&plural takes care of this already?
 ];
 
 //A better way to deal with punctuation in this situatation, I know not. 
@@ -2310,6 +2370,7 @@ K.BoringItems = [
   "anvil",
   "axle",
   "tuppence",
+  "tupperware",
   "casket",
   "nosegay",
   "trinket",
@@ -2759,3 +2820,41 @@ K.KlassTitles = [
    "Grand",
    "Exhalted",
    "Exiled"];
+
+
+
+//---------SIDE QUEST TEMPLATES
+const sideQuestTemplates = [
+  {
+    type: "treasureHunt",
+    steps: [
+      "You are approached by $NPC, who speaks of treasure hidden in $LOCATION.",
+      '"You seek the $ITEM..." they whisper.',
+      "You set out on your journey...",
+      "You arrive and discover...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "...nothing but dust. You return empty-handed.",
+      "...a chest! You claim the $ITEM.",
+      "...an ambush! $MONSTER attacks!"
+    ],
+    nameTemplate: "The Search for $ITEM in $LOCATION"
+  },
+  {
+    type: "rescueMission",
+    steps: [
+      "$NPC begs you to rescue $TARGET from $LOCATION.",
+      "You gear up for the perilous journey...",
+      "You find $TARGET cornered by $MONSTER.",
+      "A fight ensues...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You save $TARGET and return as a hero.",
+      "The enemy overpowers you, and you flee.",
+      "$TARGET escapes on their own, thanking you anyway."
+    ],
+    nameTemplate: "The Rescue of $TARGET from $LOCATION"
+  }
+];

@@ -46,12 +46,20 @@ function RandSign() {
   return Random(2) * 2 - 1;
 }
 
+function RandomHigh(ceiling) {
+  return Max(weightedRandom(ceiling,0.8), weightedRandom(ceiling,0.8));
+}
+
 function RandomLow(below) {
   return Min(Random(below), Random(below));
 }
 
 function PickLow(s) {
   return s[RandomLow(s.length)];
+}
+
+function PickHigh(s) {
+  return s[RandomHigh(s.length)];
 }
 
 function Copy(s, b, l) {
@@ -71,17 +79,43 @@ function Ends(s, e) {
 }
 
 function Plural(s) {
-  if (Ends(s,'y'))
-    return Copy(s,1,Length(s)-1) + 'ies';
-  else if (Ends(s,'us'))
-    return Copy(s,1,Length(s)-2) + 'i';
-  else if (Ends(s,'ch') || Ends(s,'x') || Ends(s,'s') || Ends(s, 'sh'))
-    return s + 'es';
-  else if (Ends(s,'f'))
-    return Copy(s,1,Length(s)-1) + 'ves';
-  else if (Ends(s,'man') || Ends(s,'Man'))
-    return Copy(s,1,Length(s)-2) + 'en';
-  else return s + 's';
+  const words = s.trim().split(/\s+/);
+  if (words.length === 1) {
+    return pluralizeWord(words[0]);
+  } else {
+    let result = [...words];
+    result[result.length - 1] = pluralizeWord(result[result.length - 1]);
+    return result.join(' ');
+  }
+}
+
+function pluralizeWord(word) {
+  const lowerWord = word.toLowerCase();
+  if (word === 'foot') return 'feet';
+  if (['kvarter', 'perch', 'steppes'].includes(lowerWord)) return word;
+  if (word === 'wood') {
+    return Math.random() < 0.5 ? 'wood' : 'woods';
+  }
+  if (Ends(word, 'y')) {
+    if (lowerWord === 'valley') return word + 's';
+    return Copy(word, 1, Length(word) - 1) + 'ies';
+  } else if (Ends(word, 'us')) {
+    return Copy(word, 1, Length(word) - 2) + 'i';
+  } else if (Ends(word, 'ch') || Ends(word, 'x') || Ends(word, 's') || Ends(word, 'sh')) {
+    return word + 'es';
+  } else if (Ends(word, 'f') && !['cliff', 'chief', 'reef'].includes(lowerWord)) {
+    if (['knife', 'leaf', 'thief', 'loaf'].includes(lowerWord)) {
+      return Copy(word, 1, Length(word) - 1) + 'ves';
+    }
+    if (lowerWord === 'dwarf') {
+      return Random(2) ? word + 's' : Copy(word, 1, Length(word) - 1) + 'ves';
+    }
+    return Copy(word, 1, Length(word) - 1) + 'ves';
+  } else if (Ends(word, 'man') || Ends(word, 'Man')) {
+    return Copy(word, 1, Length(word) - 2) + 'en';
+  } else {
+    return word + 's';
+  }
 }
 
 function Split(s, field, separator) {
@@ -172,26 +206,7 @@ function InterplotCinematic() {
   Q('plot|1|Loading');
 }
 
-function doSideQuest() {
-    let sideQuestNPC = coolName();
-	let sideQuestItm = (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
-	let sideQuestDest = Pick([' at ',' near ',' around ',]) + Definite(GenerateItemPrefix() + " " + 
-		ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
-		GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
-	Q('task|10|You are approached by ' + coolName() + ', who tells you of a great treasure' + sideQuestDest);
-	Q('task|5|"You seek the "' + sideQuestItm + '...');
-	Q('task|2|You agree and set out on your journey...');
-	Q('task|5|You reach your destination and find...');
-	//---todo add some additional outcomes...
-	Q('task|2|...nothing.  You begin to make your way back home.');
-	Q('task|4|You quicky find ' + sideQuestNPC + ' who apologizes for wasting your time.');
-	Q('task|4|Not before you rattle some gold out of them!');
-	addScaledGold();
-	//---todo add incremental quest completion?
-	QuestBar.reposition(QuestBar.Max());
-    TaskBar.reposition(TaskBar.Max());
-}
-
+//-fun for the console output...
 function sideQuestStorySample() {
 	let sideQuestNPC = coolName();
 	let sideQuestItm = (Random(2) === 0 ? Indefinite(InterestingItem(),(Random(42)+1)) : Definite(InterestingItem(),(Random(2)+1))) + " of " + Pick(K.ItemOfs)
@@ -202,6 +217,66 @@ function sideQuestStorySample() {
 	'You reach your destination and find...  ...nothing.  You begin to make your way back home.  You quicky find ' + splitName(sideQuestNPC) + 
 	' who apologizes for wasting your time.  Not before you rattle some gold out of them!';
 }
+
+function doSideQuest() {
+  const sideQuest = generateSideQuest();
+  game.sideQuestSteps = sideQuest.steps.map((step, index) => () => Task(step, 5000 + index * 1000));
+  game.task = "sideQuest";
+  
+  // Use the already substituted outcome
+  game.sideQuestOutcome = sideQuest.outcome;
+  game.sideQuestItem = sideQuest.rawData.item || "unknown item"; // Use the generated item directly
+
+  const caption = `Side Quest: ${sideQuest.name}`;
+  game.Quests.push(caption);
+  game.bestquest = caption;
+  Quests.AddUI(caption);
+  Log('Commencing quest: ' + caption);
+}
+
+//---------
+//---------New Side Quest system
+function generateSideQuest() {
+  const template = Pick(sideQuestTemplates);
+  const npc = coolName();
+  const item = coolItem();
+  const location = coolPlace();
+  const monster = NamedMonster();
+  const target = coolName();
+  const rawOutcome = Pick(template.outcomes);
+
+  // Substitute placeholders in the outcome upfront
+  const outcome = rawOutcome
+    .replace("$NPC", npc)
+    .replace("$ITEM", item)
+    .replace("$LOCATION", location)
+    .replace("$MONSTER", monster)
+    .replace("$TARGET", target);
+
+  const steps = template.steps.map(step =>
+    step.replace("$NPC", npc)
+        .replace("$ITEM", item)
+        .replace("$LOCATION", location)
+        .replace("$MONSTER", monster)
+        .replace("$TARGET", target)
+        .replace("$OUTCOME", outcome) // Use the substituted outcome
+  );
+
+  const questName = template.nameTemplate
+    .replace("$NPC", npc.split(" ")[0])
+    .replace("$ITEM", item)
+    .replace("$LOCATION", location)
+    .replace("$MONSTER", monster)
+    .replace("$TARGET", target.split(" ")[0]);
+
+  return { 
+    name: questName, 
+    steps, 
+    outcome, 
+    rawData: { npc, item, location, monster, target, outcome: rawOutcome } // Store raw outcome for reference
+  };
+}
+//---------
 
 
 function StrToInt(s) {
@@ -340,83 +415,115 @@ function EquipPrice() {
 
 function Dequeue() {
   while (TaskDone()) {
-    if (Split(game.task,0) == 'kill') {
-      if (Split(game.task,3) == '*') {
-        WinItem();
-      } else if (Split(game.task,3)) {
-		//Handle monsters with multiple item drop possibilites //Fixed issue when encountering "*" from multi-choice-drop-possible mobs.
-		if (Split(game.task,3).indexOf(',') > -1) {
-			var mItem = Pick(Split(game.task,3).split(','))
-			if (mItem == '*') {
-				WinItem();
-			} else {
-				Add(Inventory,LowerCase(Split(game.task,1) + ' ' + ProperCase(mItem)),1);
-			}
-		} else {
-			Add(Inventory,LowerCase(Split(game.task,1) + ' ' + ProperCase(Split(game.task,3))),1);
-		}
+    var old = game.task;
+
+    if (game.task === 'sideQuest') {
+      if (game.sideQuestSteps && game.sideQuestSteps.length > 0) {
+        const nextStep = game.sideQuestSteps.shift();
+        nextStep();
+        break;
+      } else {
+        game.task = '';
+        delete game.sideQuestSteps;
+
+        // Use the fully substituted outcome
+        if (game.sideQuestOutcome.includes("claim the")) {
+          Add(Inventory, game.sideQuestItem, 1);
+          Task("You gained a " + game.sideQuestItem + "!", 2000);
+        } else if (game.sideQuestOutcome.includes("attacks") || game.sideQuestOutcome.includes("overpowers you")) {
+          Task("You fought bravely but gained only experience.", 2000);
+        } else if (game.sideQuestOutcome.includes("return as a hero")) {
+          Task("The townsfolk cheer your name!", 2000);
+          ExpBar.increment(50);
+        } else {
+          Task("Better luck next time.", 2000);
+        }
+
+        QuestBar.reposition(QuestBar.Max());
+        Log('Quest completed: ' + game.bestquest);
+        Quests.CheckAll();
+        break;
       }
-    } else if (game.task == 'buying') {
-      // buy some equipment
-      Add(Inventory,'Gold',-EquipPrice());
+    } else if (Split(game.task, 0) === 'kill') {
+      if (Split(game.task, 3) === '*') {
+        WinItem();
+      } else if (Split(game.task, 3)) {
+        if (Split(game.task, 3).indexOf(',') > -1) {
+          var mItem = Pick(Split(game.task, 3).split(','));
+          if (mItem === '*') {
+            WinItem();
+          } else {
+            Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(mItem)), 1);
+          }
+        } else {
+          Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(Split(game.task, 3))), 1);
+        }
+      }
+    } else if (game.task === 'buying') {
+      Add(Inventory, 'Gold', -EquipPrice());
       WinEquip();
-    } else if ((game.task == 'market') || (game.task == 'sell')) {
-      if (game.task == 'sell') {
-        var amt = GetI(Inventory, 1) * GetI(Traits,'Level');
-        if (Pos(' of ', Inventory.label(1)) > 0)
-          amt *= (1+RandomLow(10)) * (1+RandomLow(GetI(Traits,'Level')));
+    } else if (game.task === 'market' || game.task === 'sell') {
+      if (game.task === 'sell') {
+        var amt = GetI(Inventory, 1) * GetI(Traits, 'Level');
+        if (Pos(' of ', Inventory.label(1)) > 0) {
+          amt *= (1 + RandomLow(10)) * (1 + RandomLow(GetI(Traits, 'Level')));
+        }
         Inventory.remove1();
         Add(Inventory, 'Gold', amt);
       }
       if (Inventory.length() > 1) {
         Inventory.scrollToTop();
-        Task('Selling ' + Indefinite(Inventory.label(1), GetI(Inventory,1)),
-             1 * 1000);
+        Task('Selling ' + Indefinite(Inventory.label(1), GetI(Inventory, 1)), 1 * 1000);
         game.task = 'sell';
-        break;
+        break; // Exit loop after setting sell task
       }
     }
 
-    var old = game.task;
-    game.task = '';
+    if (!game.task.startsWith('sideQuest')) {
+      game.task = '';
+    }
+
     if (game.queue.length > 0) {
-      var a = Split(game.queue[0],0);
-      var n = StrToInt(Split(game.queue[0],1));
-      var s = Split(game.queue[0],2);
-      if (a == 'task' || a == 'plot') {
+      var a = Split(game.queue[0], 0);
+      var n = StrToInt(Split(game.queue[0], 1));
+      var s = Split(game.queue[0], 2);
+      if (a === 'task' || a === 'plot') {
         game.queue.shift();
-        if (a == 'plot') {
+        if (a === 'plot') {
           CompleteAct();
           s = 'Loading ' + game.bestplot;
         }
         Task(s, n * 1000);
+        break; // Exit loop after queuing a new task
       } else {
-        throw 'bah!' + a;
+        throw 'Unknown queue action: ' + a;
       }
     } else if (EncumBar.done()) {
-      Task('Heading to market to sell loot',4 * 1000);
+      Task('Heading to market to sell loot', 4 * 1000);
       game.task = 'market';
-    } else if ((Pos('kill|',old) <= 0) && (old != 'heading')) {
+      break; // Exit loop after setting market task
+    } else if (!game.task && Pos('kill|', old) <= 0 && old !== 'heading') {
       if (GetI(Inventory, 'Gold') > EquipPrice()) {
         Task('Negotiating purchase of better equipment', 5 * 1000);
         game.task = 'buying';
+        break; // Exit loop after setting buying task
       } else {
         Task('Heading to the killing fields', 4 * 1000);
         game.task = 'heading';
+        break; // Exit loop after setting heading task
       }
-    } else {
+    } else if (!game.task) {
       var nn = GetI(Traits, 'Level');
       var t = MonsterTask(nn);
       var InventoryLabelAlsoGameStyleTag = 3;
       nn = Math.floor((2 * InventoryLabelAlsoGameStyleTag * t.level * 1000) / nn);
       Task('Executing ' + t.description, nn);
+      break; // Exit loop after setting monster task
     }
-	
-	// Advanced 3D Graphics!
-	generateHash(game).then(hash => {
-	  updateMandelbulb(hash);
-	});
 
+    generateHash(game).then(hash => {
+      updateMandelbulb(hash);
+    });
   }
 }
 
@@ -769,6 +876,64 @@ function randomTaskToo() {
 		(Random(2) === 0 ? ".  Then " : " and ") + Pick(K.Verbs) + ' ' + coolItem() + '.';
 }
 
+function wallyBfeed(numSteps = 3) {
+    // Generate the treasure and final monster upfront
+    const treasure = generateLegendaryItemName(null, 'unique');
+    const finalMonster = NamedMonster(GetI(Traits, 'Level') + 5);
+
+    // Create an array of landmarks (numSteps intermediate + 1 final)
+    const landmarks = [];
+    for (let i = 0; i <= numSteps; i++) {
+        landmarks.push(fuzzyPlace() + " of " + namedPlace());
+    }
+
+    const result = [];
+
+    // First step: Initial journey
+    let step = "First, you must " + 
+               LowerCase(splitName(Pick(K.travelVerbs))) + " " + 
+               Indefinite(PickHigh(K.travelUnitsOfMeasure), (Random(100) + 1)) + " " + 
+               Pick(K.Directions) + " to " + 
+               landmarks[0];
+    result.push(step);
+
+    // Intermediate steps: Travel with possible interactions    splitName(Pick(K.travelVerbs))
+    for (let i = 1; i < numSteps; i++) {
+        step = Pick(K.travelVerbsAlt) + ' ' +
+               Indefinite(Pick(K.travelUnitsOfMeasure), (Random(100) + 1)) + " " + 
+               Pick(K.Directions) + " to " + 
+               landmarks[i];
+
+        // 30% chance of an interaction
+        if (Random(10) < 3) {
+            const interactionType = Random(2);
+            if (interactionType === 0) { // Visit
+                const entity = coolName();
+                const visitType = Random(2);
+                if (visitType === 0) {
+                    step += ", where you must " + LowerCase(Pick(K.moreVerbs)) + ' ' + entity;
+                } else {
+                    const item = coolItem();
+                    step += ", where you must " + LowerCase(Pick(K.Verbs))+ ' ' + item + Pick(K.connectingPhrases) + LowerCase(Pick(K.moreVerbs)) + ' ' + entity;
+                }
+            } else { // Encounter
+                const monster = NamedMonster(GetI(Traits, 'Level'));
+                step += ", where you must defeat " + monster + " to proceed";
+            }
+        }
+        result.push(step);
+    }
+
+    // Final step: Reach the destination, fight the monster, claim the treasure
+    step = "Finally, you arrive at " + 
+           landmarks[numSteps] + 
+           ", where you must face " + finalMonster + 
+           " and claim your prize: " + treasure;
+    result.push(step);
+
+    return result;
+}
+
 function WinItem() {
   if (Max(250, Random(999)) < Inventory.length()) {
     Add(Inventory, Pick(Inventory.rows()).firstChild.innerText, 1);
@@ -777,125 +942,75 @@ function WinItem() {
   }
 }
 
+function generateMonsterQuest(verb) {
+  let level = GetI(Traits, 'Level');
+  let lev = 0;
+  for (let i = 0; i < 4; i++) {
+    let montag = Random(K.Monsters.length);
+    let m = K.Monsters[montag];
+    let l = StrToInt(Split(m, 1));
+    if (i === 0 || Math.abs(l - level) < Math.abs(lev - level)) {
+      lev = l;
+      game.questmonster = m;
+      game.questmonsterindex = montag;
+    }
+  }
+  return `${verb} ${Definite(Split(game.questmonster, 0), 2)}`;
+}
+
+function generateItemQuest(verb, itemFunc, qty = 1, definite = false) {
+  let item = itemFunc();
+  let article = definite ? Definite(item, qty) : Indefinite(item, qty);
+  return `${verb} ${article}`;
+}
+
 function CompleteQuest() {
   QuestBar.reset(50 + Random(100));
   if (Quests.length()) {
     Log('Quest completed: ' + game.bestquest);
     Quests.CheckAll();
-    [WinSpell,WinEquip,WinStat,WinItem][Random(4)]();
+    [WinSpell, WinEquip, WinStat, WinItem][Random(4)]();
   }
-  while (Quests.length() > 99)
-    Quests.remove0();
+  while (Quests.length > 99) Quests.remove0();
 
   game.questmonster = '';
-  var caption;
-  switch (Random(20)) {
-  case 0:
-    var level = GetI(Traits,'Level');
-    var lev = 0;
-    for (var i = 1; i <= 4; ++i) {
-      var montag = Random(K.Monsters.length);
-      var m = K.Monsters[montag];
-      var l = StrToInt(Split(m,1));
-      if (i == 1 || Abs(l - level) < Abs(lev - level)) {
-        lev = l;
-        game.questmonster = m;
-        game.questmonsterindex = montag;
-      }
-    }
-    caption = 'Exterminate ' + Definite(Split(game.questmonster,0),2);
-    break;
-  case 1:
-    caption = 'Seek ' + Definite(InterestingItem(), 1);
-    break;
-  case 2:
-    caption = 'Deliver this ' + BoringItem();
-    break;
-  case 3:
-    caption = 'Fetch me ' + Indefinite(BoringItem(), 1);
-    break;
-  case 4:
-    var mlev = 0;
-    level = GetI(Traits,'Level');
-    for (var ii = 1; ii <= 2; ++ii) {
-      montag = Random(K.Monsters.length);
-      m = K.Monsters[montag];
-      l = StrToInt(Split(m,1));
-      if ((ii == 1) || (Abs(l - level) < Abs(mlev - level))) {
-        mlev = l;
-        game.questmonster = m;
-      }
-    }
-    caption = 'Placate ' + Definite(Split(game.questmonster,0),2);
-    game.questmonster = '';  // We're trying to placate them, after all
-    break;
-  case 5:
-    caption = 'Restore ' + Definite(InterestingItem(), 2);
-    break;
-  case 6:
-    caption = 'Repair these ' + Indefinite(BoringItem(), 3);
-    break;
-  case 7:
-    caption = 'Upgrade ' + Definite(InterestingItem(), 1);
-    break;
-  case 8:
-    caption = 'Decommision ' + Indefinite(InterestingItem(), 1);
-    break;
-  case 9:
-    caption = 'Sign for delivery of ' + Indefinite(BoringItem(), (Random(42) + 1));
-    break;
-  case 10:
-    caption = 'Ship ' + Indefinite(BoringItem(), (Random(20) + 1)) + " to the village of " + GenerateLocationName() + ".";
-    break;
-  case 11:
-    caption = 'Recover the CEO\'s ' + InterestingItem();
-    break;
-  case 12:
-    caption = 'Assist the Executive with ' + Indefinite(InterestingItem(), (Random(2) + 1));
-    break;
-  case 13:
-    var mlev = 0;
-    level = GetI(Traits,'Level');
-    for (var ii = 1; ii <= 2; ++ii) {
-      montag = Random(K.Monsters.length);
-      m = K.Monsters[montag];
-      l = StrToInt(Split(m,1));
-      if ((ii == 1) || (Abs(l - level) < Abs(mlev - level))) {
-        mlev = l;
-        game.questmonster = m;
-      }
-    }
-    caption = 'Resolve tickets about ' + Definite(Split(game.questmonster,0),2);
-    game.questmonster = '';  // We're trying to placate them, after all
-    break;
-  case 14:
-    caption = 'Implement a policy for ' + Definite(SpecialItem(), 1);
-    break;
-  case 15:
-    caption = 'Find replacement parts for ' + Definite(SpecialItem(), 1);
-    break;
-  case 16:
-    caption = 'Purchase ' + Indefinite(BoringItem(), (Random(100) + 1));
-    break;
-  case 17:
-    caption = Random(2) === 0 ? randomTask() : randomTaskToo();
-    break;
-  case 18:
-    caption = diplomaticMission();
-    break;
-  case 19: //is this working correctly???
-    caption = "Side Quest: Title TBD";
-    doSideQuest();
-    break;
-  }
+
+  // Helper functions remain unchanged...
+
+  const questGenerators = [
+    () => generateMonsterQuest('Exterminate'),
+    () => generateItemQuest('Seek', () => InterestingItem(), 1, true),
+    () => generateItemQuest('Deliver this', BoringItem),
+    () => generateItemQuest('Fetch me', BoringItem, 1),
+    () => { let caption = generateMonsterQuest('Placate'); game.questmonster = ''; return caption; },
+    () => generateItemQuest('Restore', InterestingItem, 2, true),
+    () => generateItemQuest('Repair these', BoringItem, 3),
+    () => generateItemQuest('Upgrade', InterestingItem, 1, true),
+    () => generateItemQuest('Decommision', InterestingItem, 1),
+    () => generateItemQuest('Sign for delivery of', BoringItem, Random(42) + 1),
+    () => generateItemQuest('Ship', BoringItem, Random(20) + 1) + " to the village of " + GenerateLocationName() + ".",
+    () => "Recover the CEO's " + InterestingItem(),
+    () => "Assist the Executive with " + Indefinite(InterestingItem(), Random(2) + 1),
+    () => { let caption = generateMonsterQuest('Resolve tickets about'); game.questmonster = ''; return caption; },
+    () => generateItemQuest('Implement a policy for', SpecialItem, 1, true),
+    () => generateItemQuest('Find replacement parts for', SpecialItem, 1, true),
+    () => generateItemQuest('Purchase', BoringItem, Random(100) + 1),
+    () => Random(2) === 0 ? randomTask() : randomTaskToo(),
+    () => diplomaticMission(),
+    () => { doSideQuest(); } // No caption here, doSideQuest handles it
+  ];
+
+  const caption = questGenerators[Random(questGenerators.length)]();
   if (!game.Quests) game.Quests = [];
   while (game.Quests.length > 99) game.Quests.shift();
-  game.Quests.push(caption);
-  game.bestquest = caption;
-  Quests.AddUI(caption);
 
-
-  Log('Commencing quest: ' + caption);
+  // Only add caption if it exists (side quests handle their own)
+  if (caption) {
+    game.Quests.push(caption);
+    game.bestquest = caption;
+    Quests.AddUI(caption);
+    Log('Commencing quest: ' + caption);
+  }
 
   SaveGame();
 }

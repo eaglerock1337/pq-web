@@ -277,15 +277,15 @@ function generateSideQuest() {
   );
 
   const questName = template.nameTemplate
-    .replace("$NPCTOO", splitName(npc2)
-    .replace("$NPC", splitName(npc)
+    .replace("$NPCTOO", splitName(npc2))
+    .replace("$NPC", splitName(npc))
     .replace("$ITEM", item)
     .replace("$LOCATIONTOO", location2)
     .replace("$LOCATION", location)
     .replace("$TOWN", town)
     .replace("$MOUNT_DOOM", mountDoom)
     .replace("$MONSTER", monster)
-    .replace("$TARGET", splitName(target);
+    .replace("$TARGET", splitName(target));
 
   return { 
     name: questName, 

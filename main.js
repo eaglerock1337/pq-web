@@ -446,7 +446,7 @@ function EquipPrice() {
 function Dequeue() {
   while (TaskDone()) {
     var old = game.task;
-
+	generateHash(game).then(hash => { updateMandelbulb(hash) });
     if (game.task === 'sideQuest') {
       if (game.sideQuestSteps && game.sideQuestSteps.length > 0) {
         const nextStep = game.sideQuestSteps.shift();
@@ -579,10 +579,6 @@ function Dequeue() {
       Task('Executing ' + t.description, nn);
       break; // Exit loop after setting monster task
     }
-
-    generateHash(game).then(hash => {
-      updateMandelbulb(hash);
-    });
   }
 }
 

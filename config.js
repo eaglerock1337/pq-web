@@ -2390,7 +2390,8 @@ K.BoringItems = [
   "spoon",
   "fork",
   "knife",
-  "blade"];
+  "blade",
+  "antlers"];
 
 K.Monsters = [
   "Anhkheg|6|chitin,acid",
@@ -2839,6 +2840,10 @@ const sideQuestTemplates = [
       "...a chest! You claim the $ITEM.",
       "...an ambush! $MONSTER attacks!"
     ],
+	rewards: [
+	  "$ITEM",
+	  "$GOLD"
+	],
     nameTemplate: "The Search for $ITEM in $LOCATION"
   },
   {
@@ -2855,6 +2860,138 @@ const sideQuestTemplates = [
       "The enemy overpowers you, and you flee.",
       "$TARGET escapes on their own, thanking you anyway."
     ],
+	rewards: [
+	  "$XP"
+	],
     nameTemplate: "The Rescue of $TARGET from $LOCATION"
+  },
+  {
+    type: "escortMission",
+    steps: [
+      "$NPC asks you to escort them safely to $LOCATION.",
+      "You prepare for the journey...",
+      "Along the way, you encounter $MONSTER.",
+      "A confrontation ensues...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You safely escort $NPC to $LOCATION.",
+      "The journey proves too dangerous, and $NPC retreats.",
+      "$MONSTER overwhelms you, and $NPC is lost."
+    ],
+	rewards: [
+	  "$ITEM",
+	  "$GOLD",
+	  "$XP"
+	],
+	nameTemplate: "Escort $NPC to $LOCATION"
+  },
+  {
+    type: "gatheringQuest",
+    steps: [
+      "$NPC requests rare $ITEM from $LOCATION.",
+      "You begin your search...",
+      "You find the $ITEM but it's guarded by $MONSTER.",
+      "A battle occurs...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You retrieve the $ITEM and return it to $NPC, who pays hansomly for your efforts!",
+      "The $ITEM is destroyed in the scuffle.",
+      "You are unable to defeat the $MONSTER and retreat."
+    ],
+	rewards: [
+	  "$GOLD",
+	  "$XP"
+	],
+    nameTemplate: "Gathering $ITEM from $LOCATION"  //todo: make a variant of this adds an equippable item?  also maybe quests that yield other char bonuses like stats, or spells.
+  },
+  {
+    type: "puzzleChallenge",
+    steps: [
+      "$NPC challenges you to solve the puzzle at $LOCATION.",
+      "You arrive at the puzzle site...",
+      "The puzzle is more complex than it seems...",
+      "You use your wit and skills...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You solve the puzzle and reveal a hidden treasure!",
+      "The puzzle proves too difficult, and you give up.",
+      "Solving the puzzle triggers a trap, and $MONSTER appears."
+    ],
+	rewards: [
+	  "$ITEM",
+	  "$GOLD",
+	  "$XP"
+	],
+    nameTemplate: "The Puzzle of $LOCATION"
+  },
+  {
+    type: "investigationQuest",
+    steps: [
+      "$NPC informs you of strange happenings in $LOCATION.",
+      "You travel to $LOCATION to investigate...",
+      "You gather clues and speak to $TARGET...",
+      "You piece together the mystery...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You uncover the truth and reveal the culprit was $NPC the whole time!",
+      "The mystery remains unsolved, leaving you puzzled.",
+      "The investigation leads to a dangerous confrontation with $MONSTER."
+    ],
+	rewards: [
+	  "$ITEM",
+	  "$XP"
+	],
+    nameTemplate: "Investigating $LOCATION"
+  },
+  {
+    type: "monsterHunt",
+    steps: [
+      "$NPC approaches you with tales of a terrifying $MONSTER lurking in $LOCATION.",
+      "You prepare your gear and set off to hunt the beast...",
+      "Upon reaching $LOCATION, you track the $MONSTER's trail...",
+      "You finally encounter the $MONSTER in its lair...",
+      "An intense battle ensues...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You slay the $MONSTER and claim its trophy.",
+      "The $MONSTER escapes, leaving you to plot your next hunt.",
+      "You are defeated by the $MONSTER and barely escape with your life."
+    ],
+	rewards: [
+	  "$ITEM",
+	  "$XP"
+	],
+    nameTemplate: "The Hunt for the $MONSTER in $LOCATION"
+  },
+  {
+    type: "epicParody",
+    steps: [
+      "$NPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
+      "You embark on a long journey with your loyal companions...",
+      "You traverse the dangerous $LOCATION, facing many perils...",
+      "You reach $TOWN, where you rest and gather supplies...",
+      "You continue your journey through the treacherous $LOCATION2...",
+      "You encounter $MONSTER, who tries to take the ring...",
+      "You narrowly escape and press on towards $MOUNT_DOOM...",
+      "You climb the steep slopes of $MOUNT_DOOM, battling exhaustion...",
+      "At the summit, you prepare to destroy the ring, but $NPC2 appears to stop you...",
+      "A dramatic confrontation ensues...",
+      "$OUTCOME"
+    ],
+    outcomes: [
+      "You cast the ring into the fire! It is destroyed forever!",
+      "$NPC2 steals the ring and escapes, leaving you in despair.",
+      "The ring slips from your grasp but falls into the fires accidentally!"
+    ],
+	rewards: [
+	  "$XP"
+	],
+    nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
   }
+  
 ];

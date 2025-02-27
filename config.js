@@ -1081,7 +1081,7 @@ function coolItem() {
 
 function coolPlace() {
 	return Definite(GenerateItemPrefix() + " " + ProperCase(Pick(K.fuzzyLocations)),(Random(2)+1)) + " of " + 
-	GenerateLocationName(Pick([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
+	GenerateLocationName(PickLow([1,2,3]), Pick(['mixed','elvish','dwarvish','human','dark']));
 }
 
 function fuzzyPlace() {
@@ -2836,14 +2836,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "...nothing but dust. You return empty-handed.",
-      "...a chest! You claim the $ITEM.",
-      "...an ambush! $MONSTER attacks!"
+      {
+        description: "...nothing but dust. You return empty-handed.",
+        rewards: ["xp:50"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "...a chest! You claim the $ITEM.",
+        rewards: ["item:$ITEM", "xp:100"],
+        feedback: "You gained a $ITEM!"
+      },
+      {
+        description: "...an ambush! $MONSTER attacks!",
+        rewards: ["xp:100"],
+        feedback: "You fought bravely but gained only experience."
+      }
     ],
-	rewards: [
-	  "$ITEM",
-	  "$GOLD"
-	],
     nameTemplate: "The Search for $ITEM in $LOCATION"
   },
   {
@@ -2856,13 +2864,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You save $TARGET and return as a hero.",
-      "The enemy overpowers you, and you flee.",
-      "$TARGET escapes on their own, thanking you anyway."
+      {
+        description: "You save $TARGET and return as a hero.",
+        rewards: ["xp:100", "gold:50"],
+        feedback: "The townsfolk cheer your name! You earned 50 gold."
+      },
+      {
+        description: "The enemy overpowers you, and you flee.",
+        rewards: ["xp:50"],
+        feedback: "You retreat, wiser but bruised."
+      },
+      {
+        description: "$TARGET escapes on their own, thanking you anyway.",
+        rewards: ["xp:75"],
+        feedback: "$TARGET thanks you with a nod and a smile."
+      }
     ],
-	rewards: [
-	  "$XP"
-	],
     nameTemplate: "The Rescue of $TARGET from $LOCATION"
   },
   {
@@ -2875,15 +2892,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You safely escort $NPC to $LOCATION.",
-      "The journey proves too dangerous, and $NPC retreats.",
-      "$MONSTER overwhelms you, and $NPC is lost."
+		{
+			description: "You safely escort $NPC to $LOCATION.",
+			rewards: ["xp:100", "gold:scaled"],
+			feedback: "$NPC thanks you and you receive some gold!"
+		},
+		{
+			description: "The journey proves too dangerous, and $NPC retreats.",
+			rewards: ["xp:100"],
+			feedback: "You fought bravely but gained only experience."
+		},
+		{
+			description: "$MONSTER overwhelms you, and $NPC is lost.",
+			rewards: ["xp:50"],
+			feedback: "You fought bravely but gained only experience."
+		}
     ],
-	rewards: [
-	  "$ITEM",
-	  "$GOLD",
-	  "$XP"
-	],
 	nameTemplate: "Escort $NPC to $LOCATION"
   },
   {
@@ -2896,14 +2920,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You retrieve the $ITEM and return it to $NPC, who pays hansomly for your efforts!",
-      "The $ITEM is destroyed in the scuffle.",
-      "You are unable to defeat the $MONSTER and retreat."
+		{
+			description: "You retrieve the $ITEM and return it to $NPC, who pays handsomely for your efforts!",
+			rewards: ["xp:150", "gold:scaled"],
+			feedback: "Take it!  I don't need it!"
+		},
+		{
+			description: "The $ITEM is destroyed in the scuffle.",
+			rewards: ["xp:150"],
+			feedback: "Better luck next time."
+		},
+		{
+			description: "You are unable to defeat the $MONSTER and retreat.",
+			rewards: ["xp:50"],
+			feedback: "Better luck next time."
+		}
     ],
-	rewards: [
-	  "$GOLD",
-	  "$XP"
-	],
     nameTemplate: "Gathering $ITEM from $LOCATION"  //todo: make a variant of this adds an equippable item?  also maybe quests that yield other char bonuses like stats, or spells.
   },
   {
@@ -2916,15 +2948,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You solve the puzzle and reveal a hidden treasure!",
-      "The puzzle proves too difficult, and you give up.",
-      "Solving the puzzle triggers a trap, and $MONSTER appears."
+		{
+			description: "You solve the puzzle and reveal a hidden treasure!",
+			rewards: ["xp:150","item:$ITEM"],
+			feedback: "You gained a $ITEM!"
+		},
+		{
+			description: "The puzzle proves too difficult, and you give up.",
+			rewards: ["xp:50"],
+			feedback: "Better luck next time."
+		},
+		{
+			description: "Solving the puzzle triggers a trap, and $MONSTER appears.",
+			rewards: ["xp:150", "item:$ITEM", "gold:scaled"],
+			feedback: "Victory!  You have obtained $Item and a bag of gold!"
+		}
     ],
-	rewards: [
-	  "$ITEM",
-	  "$GOLD",
-	  "$XP"
-	],
     nameTemplate: "The Puzzle of $LOCATION"
   },
   {
@@ -2937,14 +2976,22 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You uncover the truth and reveal the culprit was $NPC the whole time!",
-      "The mystery remains unsolved, leaving you puzzled.",
-      "The investigation leads to a dangerous confrontation with $MONSTER."
+		{
+			description: "You uncover the truth and reveal the culprit was $NPC the whole time!",
+			rewards: ["xp:150"],
+			feedback: "Better luck next time."
+		},
+		{
+			description: "The mystery remains unsolved, leaving you puzzled.",
+			rewards: ["xp:50"],
+			feedback: "Better luck next time."
+		},
+		{
+			description: "The investigation leads to a dangerous confrontation with $MONSTER.",
+			rewards: ["xp:150"],
+			feedback: "You managed to dispatch the beast and uncover $ITEM!"
+		}
     ],
-	rewards: [
-	  "$ITEM",
-	  "$XP"
-	],
     nameTemplate: "Investigating $LOCATION"
   },
   {
@@ -2958,40 +3005,59 @@ const sideQuestTemplates = [
       "$OUTCOME"
     ],
     outcomes: [
-      "You slay the $MONSTER and claim its trophy.",
-      "The $MONSTER escapes, leaving you to plot your next hunt.",
-      "You are defeated by the $MONSTER and barely escape with your life."
+		{
+			description: "You slay the $MONSTER and claim its trophy.",
+			rewards: ["xp:150","item:$ITEM"],
+			feedback: "You gained a $ITEM!"
+		},
+		{
+			description: "The $MONSTER escapes, leaving you to plot your next hunt.",
+			rewards: ["xp:75"],
+	        feedback: "Better luck next time."
+		},
+		{
+			description: "You are defeated by the $MONSTER and barely escape with your life.",
+			rewards: ["xp:50"],
+			feedback: "You fought bravely but gained only experience."
+		}
     ],
-	rewards: [
-	  "$ITEM",
-	  "$XP"
-	],
     nameTemplate: "The Hunt for the $MONSTER in $LOCATION"
   },
-  {
-    type: "epicParody",
-    steps: [
-      "$NPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
-      "You embark on a long journey with your loyal companions...",
-      "You traverse the dangerous $LOCATION, facing many perils...",
-      "You reach $TOWN, where you rest and gather supplies...",
-      "You continue your journey through the treacherous $LOCATIONTOO...",
-      "You encounter $MONSTER, who tries to take the ring...",
-      "You narrowly escape and press on towards $MOUNT_DOOM...",
-      "You climb the steep slopes of $MOUNT_DOOM, battling exhaustion...",
-      "At the summit, you prepare to destroy the ring, but $NPCTOO appears to stop you...",
-      "A dramatic confrontation ensues...",
-      "$OUTCOME"
-    ],
-    outcomes: [
-      "You cast the ring into the fire! It is destroyed forever!",
-      "$NPCTOO steals the ring and escapes, leaving you in despair.",
-      "The ring slips from your grasp but falls into the fires accidentally!"
-    ],
-	rewards: [
-	  "$XP"
-	],
-    nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
-  }
-  
+{
+  type: "epicParody",
+  steps: [
+    "$NPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
+    "You embark on a long journey with your loyal companions...",
+    "You traverse the dangerous $LOCATION, facing many perils...",
+    "You reach $TOWN, where you rest and gather supplies...",
+    "You continue your journey through the treacherous $LOCATIONTOO...",
+    "You encounter $MONSTER, who tries to take the ring...",
+    "You narrowly escape and press on towards $MOUNT_DOOM...",
+	"$NPCTOO, who has long sought the ring tracks you down...",
+	"You manage to subdue $NPCTOO and convince them to guide you to $MOUNT_DOOM...",
+    "You climb the steep slopes of $MOUNT_DOOM, battling exhaustion...",
+    "At the summit, you prepare to destroy the ring, but $NPCTOO appears to stop you...",
+    "A dramatic confrontation ensues...",
+    "$OUTCOME"
+  ],
+  outcomes: [
+    {
+      description: "You cast the ring into the fire! It is destroyed forever!",
+      rewards: ["xp:1500"],
+      feedback: "You retire, comforted that the evil has been driven from the land... for now."
+    },
+    {
+      description: "$NPCTOO steals the ring and escapes, leaving you in despair.",
+      rewards: ["xp:150"],
+      feedback: "Oh no! What will become of the world?"
+    },
+    {
+      description: "The ring slips from your grasp but falls into the fires accidentally!",
+      rewards: ["xp:1500"],
+      feedback: "The ring is gone—by luck or fate, the task is done."
+    }
+  ],
+  nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
+}
+
 ];

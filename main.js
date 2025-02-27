@@ -240,60 +240,94 @@ function doSideQuest() {
 function generateSideQuest() {
   const template = Pick(sideQuestTemplates);
   const npc = coolName();
-  const npc2 = GenerateNameNew(1,Pick(['elvish','dwarvish','dark']));
+  const npc2 = GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark']));
   const item = coolItem();
-  const gold = addScaledGold();
   const location = coolPlace();
   const location2 = coolPlace();
-  const town = GenerateLocationName(1, Pick(['elvish','dwarvish','human']),false);
-  const mountDoom = GenerateLocationName(Pick([1,2]), 'dark',false);
+  const town = GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false);
+  const mountDoom = GenerateLocationName(Pick([1, 2]), 'dark', false);
   const monster = NamedMonster();
   const target = coolName();
+
+  // Substitution map
+  const subs = {
+    "$NPCTOO": npc2,
+    "$NPC": npc,
+    "$ITEM": item,
+    "$LOCATIONTOO": location2,
+    "$LOCATION": location,
+    "$TOWN": town,
+    "$MOUNT_DOOM": mountDoom,
+    "$MONSTER": monster,
+    "$TARGET": target
+  };
+
+  // Pick a raw outcome object
   const rawOutcome = Pick(template.outcomes);
 
-  // Substitute placeholders in the outcome upfront
-  const outcome = rawOutcome
-    .replace("$NPCTOO", npc2)
-    .replace("$NPC", npc)
-    .replace("$ITEM", item)
-    .replace("$LOCATIONTOO", location2)
-    .replace("$LOCATION", location)
-    .replace("$TOWN", town)
-    .replace("$MOUNT_DOOM", mountDoom)
-    .replace("$MONSTER", monster)
-    .replace("$TARGET", target);
+  // Substitute placeholders in description, rewards, and feedback
+  const outcome = {
+    description: substituteString(rawOutcome.description, subs),
+    rewards: rawOutcome.rewards.map(reward => substituteString(reward, subs)),
+    feedback: substituteString(rawOutcome.feedback, subs)
+  };
 
-  const steps = template.steps.map(step =>
-	step.replace("$NPCTOO", npc2)
-		.replace("$NPC", npc)
-        .replace("$ITEM", item)
-		.replace("$LOCATIONTOO", location2)
-        .replace("$LOCATION", location)
-		.replace("$TOWN", town)
-		.replace("$MOUNT_DOOM", mountDoom)
-        .replace("$MONSTER", monster)
-        .replace("$TARGET", target)
-        .replace("$OUTCOME", outcome) // Use the substituted outcome
-  );
+  // Substitute steps
+  const steps = template.steps.map(step => substituteString(step, subs, outcome.description));
 
-  const questName = template.nameTemplate
-    .replace("$NPCTOO", splitName(npc2))
-    .replace("$NPC", splitName(npc))
-    .replace("$ITEM", item)
-    .replace("$LOCATIONTOO", location2)
-    .replace("$LOCATION", location)
-    .replace("$TOWN", town)
-    .replace("$MOUNT_DOOM", mountDoom)
-    .replace("$MONSTER", monster)
-    .replace("$TARGET", splitName(target));
+  const questName = substituteString(template.nameTemplate, subs);
 
-  return { 
-    name: questName, 
-    steps, 
-    outcome, 
-    rawData: { npc, npc2, item, location, location2, town, mountDoom, monster, target, outcome: rawOutcome } // Store raw outcome for reference
+  return {
+    name: questName,
+    steps,
+    outcome, // {description, rewards, feedback}
+    rawData: { npc, npc2, item, location, location2, town, mountDoom, monster, target }
   };
 }
+
+// Helper function to substitute placeholders
+function substituteString(str, subs, outcomeReplacement) {
+  let result = str;
+  for (const [key, value] of Object.entries(subs)) {
+    result = result.replace(key, value);
+  }
+  if (outcomeReplacement) {
+    result = result.replace("$OUTCOME", outcomeReplacement);
+  }
+  return result;
+}
+
+function applyReward(reward) {
+  const type = Split(reward, 0, ':');
+  const value = Split(reward, 1, ':') || ''; // Handle cases with no value (e.g., "item:Some Item")
+
+  switch (type) {
+    case 'item':
+      Add(Inventory, value, 1);
+      break;
+    case 'xp':
+      ExpBar.increment(StrToInt(value));
+      break;
+    case 'gold':
+      if (value === 'scaled') {
+        addScaledGold();
+      } else {
+        Add(Inventory, 'Gold', StrToInt(value));
+      }
+      break;
+    case 'stat':
+      const stat = Split(value, 0, ':');
+      const amount = StrToInt(Split(value, 1, ':'));
+      Add(Stats, stat, amount);
+      break;
+    case 'spell':
+      Add(Spells, value, 1);
+      break;
+    default:
+      console.warn(`Unknown reward type: ${type}`);
+  }
+}
+
 //---------
 
 
@@ -446,7 +480,7 @@ function EquipPrice() {
 function Dequeue() {
   while (TaskDone()) {
     var old = game.task;
-	generateHash(game).then(hash => { updateMandelbulb(hash) });
+    generateHash(game).then(hash => { updateMandelbulb(hash) });
     if (game.task === 'sideQuest') {
       if (game.sideQuestSteps && game.sideQuestSteps.length > 0) {
         const nextStep = game.sideQuestSteps.shift();
@@ -456,51 +490,16 @@ function Dequeue() {
         game.task = '';
         delete game.sideQuestSteps;
 
-        // Use the fully substituted outcome
-        if (game.sideQuestOutcome.includes("claim the") || game.sideQuestOutcome.includes("claim its trophy") || 
-			game.sideQuestOutcome.includes("hidden treasure!")) {
-          ExpBar.increment(100);
-		  Task("You gained a " + game.sideQuestItem + "!", 2000);
-          Add(Inventory, game.sideQuestItem, 1);
-        } else if (game.sideQuestOutcome.includes("attacks") || game.sideQuestOutcome.includes("overpowers you") || 
-			game.sideQuestOutcome.includes("overwhelms you") || game.sideQuestOutcome.includes("too dangerous") ||
-			game.sideQuestOutcome.includes("retreat") || game.sideQuestOutcome.includes("You are defeated")){
-          Task("You fought bravely but gained only experience.", 2000);
-          ExpBar.increment(100);
-        } else if (game.sideQuestOutcome.includes("dangerous confrontation")) {
-		  Task("You managed to dispatch the beast and uncover " + game.sideQuestItem + "!", 2000);
-		  Add(Inventory, game.sideQuestItem, 1);
-          ExpBar.increment(100);
-		} else if (game.sideQuestOutcome.includes("return as a hero")) {
-          Task("The townsfolk cheer your name!", 2000);
-          ExpBar.increment(100);
-        } else if (game.sideQuestOutcome.includes("pays hansomly")) {
-          Task("Take it!  I don't need it!", 2000);
-		  addScaledGold();
-		  addScaledGold();
-          ExpBar.increment(100);
-        } else if (game.sideQuestOutcome.includes("triggers a trap")) { 
-		  Task("You have obtained a " + game.sideQuestItem + " and a bag of gold!", 2000);
-          Add(Inventory, game.sideQuestItem, 1);
-		  addScaledGold();
-          ExpBar.increment(100);
-        } else if (game.sideQuestOutcome.includes("It is destroyed forever!") || game.sideQuestOutcome.includes("falls into the fires accidentally!")) { 
-		  Task("You retire, comforted that the evil has been driven from the land!  ...for now", 2000);
-          ExpBar.increment(1500);
-	    } else if (game.sideQuestOutcome.includes("steals the ring")) { 
-		  Task("Oh no!  What will be come of the world?", 2000);
-          ExpBar.increment(150);
-	    } else if (game.sideQuestOutcome.includes("the culprit was")) { 
-		  Task("You return to town and find that they have fled.", 2000);
-          ExpBar.increment(100);
-	    } else {
-          Task("Better luck next time.", 2000);
-          ExpBar.increment(50);
+        if (game.sideQuestOutcome) {
+          if (game.sideQuestOutcome.rewards) {
+            game.sideQuestOutcome.rewards.forEach(applyReward);
+          }
+          Task(game.sideQuestOutcome.feedback || "Quest completed.", 2000);
+          QuestBar.reposition(QuestBar.Max());
+          Log('Quest completed: ' + game.bestquest);
+          Quests.CheckAll();
+          delete game.sideQuestOutcome;
         }
-
-        QuestBar.reposition(QuestBar.Max());
-        Log('Quest completed: ' + game.bestquest);
-        Quests.CheckAll();
         break;
       }
     } else if (Split(game.task, 0) === 'kill') {

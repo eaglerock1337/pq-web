@@ -220,8 +220,26 @@ function sideQuestStorySample() {
 
 function doSideQuest() {
   const sideQuest = generateSideQuest();
-  game.sideQuest = sideQuest; //testing
-  game.sideQuestSteps = sideQuest.steps.map((step, index) => () => Task(step, 5000 + index * 1000));
+  game.sideQuest = sideQuest; //for debugging
+
+  // Calculate total steps and initial delay
+  const totalSteps = sideQuest.steps.length;
+  const initialDelay = 5000; // initial delay in milliseconds
+  const maxTotalDelay = 10000; // maximum total delay in milliseconds
+  const ratio = Math.pow(maxTotalDelay / initialDelay, 1 / (totalSteps - 1));
+
+//----need to add custom times to templates and defer to automatic timers if no times provided in template.  also the initial quest start step is too fast.  battles to fast. and mundane notificaionts too long...
+
+  const addRandomness = (baseDelay) => {
+    return RandomLow(baseDelay) + RandomHigh(baseDelay) / 2;
+  };
+
+  // Create side quest steps with progressively reduced added time and randomness
+  game.sideQuestSteps = sideQuest.steps.map((step, index) => {
+    const delay = addRandomness(initialDelay * Math.pow(ratio, index));
+    return () => Task(step, delay);
+  });
+
   game.task = "sideQuest";
   
   // Use the already substituted outcome
@@ -235,31 +253,40 @@ function doSideQuest() {
   Log('Commencing quest: ' + caption);
 }
 
+
 //---------
 //---------New Side Quest system
 function generateSideQuest() {
   const template = Pick(sideQuestTemplates);
-  const npc = coolName();
+  const npc1 = coolName();
   const npc2 = GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark']));
-  const item = coolItem();
-  const location = coolPlace();
+  const item1 = coolItem();
+  const item2 = coolItem();
+  const location1 = coolPlace();
   const location2 = coolPlace();
+  const location3 = coolPlace();
   const town = GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false);
   const mountDoom = GenerateLocationName(Pick([1, 2]), 'dark', false);
-  const monster = NamedMonster();
+  const monster1 = NamedMonster();
+  const monster2 = NamedMonster();
   const target = coolName();
+  const friend = splitName(coolName());
 
   // Substitution map
   const subs = {
-    "$NPCTOO": npc2,
-    "$NPC": npc,
-    "$ITEM": item,
-    "$LOCATIONTOO": location2,
-    "$LOCATION": location,
+    "$FIRSTNPC": npc1,
+    "$SECONDNPC": npc2,
+    "$FIRSTITEM": item1,
+    "$SECONDITEM": item2,
+    "$FIRSTLOCATION": location1,
+    "$SECONDLOCATION": location2,
+    "$THIRDLOCATION": location3,
     "$TOWN": town,
     "$MOUNT_DOOM": mountDoom,
-    "$MONSTER": monster,
-    "$TARGET": target
+    "$FIRSTMONSTER": monster1,
+    "$SECONDMONSTER": monster2,
+    "$TARGET": target,
+    "$FRIEND": friend
   };
 
   // Pick a raw outcome object
@@ -281,7 +308,7 @@ function generateSideQuest() {
     name: questName,
     steps,
     outcome, // {description, rewards, feedback}
-    rawData: { npc, npc2, item, location, location2, town, mountDoom, monster, target }
+    rawData: { npc1, npc2, item1, item2, location1, location2, location3, town, mountDoom, monster1, monster2, target, friend }
   };
 }
 
@@ -342,6 +369,7 @@ function IntToStr(i) {
 function NamedMonster(level) {
   var lev = 0;
   var result = '';
+  var genName = Pick([GenerateNameNew(1,'dark'),GenerateName()]);
   for (var i = 0; i < 5; ++i) {
     var m = Pick(K.Monsters);
     if (!result || (Abs(level-StrToInt(Split(m,1))) < Abs(level-lev))) {
@@ -349,7 +377,7 @@ function NamedMonster(level) {
       lev = StrToInt(Split(m,1));
     }
   }
-  return GenerateName() + ' the ' + result;
+  return genName + ' the ' + result;
 }
 
 function ImpressiveGuy() {

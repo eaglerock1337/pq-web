@@ -2829,8 +2829,8 @@ const sideQuestTemplates = [
   {
     type: "treasureHunt",
     steps: [
-      "You are approached by $NPC, who speaks of treasure hidden in $LOCATION.",
-      '"You seek the $ITEM..." they whisper.',
+      "You are approached by $FIRSTNPC, who speaks of treasure hidden in $FIRSTLOCATION.",
+      '"You seek the $FIRSTITEM..." they whisper.',
       "You set out on your journey...",
       "You arrive and discover...",
       "$OUTCOME"
@@ -2842,24 +2842,24 @@ const sideQuestTemplates = [
         feedback: "Better luck next time."
       },
       {
-        description: "...a chest! You claim the $ITEM.",
-        rewards: ["item:$ITEM", "xp:100"],
-        feedback: "You gained a $ITEM!"
+        description: "...a chest! You claim the $FIRSTITEM.",
+        rewards: ["item:$FIRSTITEM", "xp:100"],
+        feedback: "You gained a $FIRSTITEM!"
       },
       {
-        description: "...an ambush! $MONSTER attacks!",
+        description: "...an ambush! $FIRSTMONSTER attacks!",
         rewards: ["xp:100"],
         feedback: "You fought bravely but gained only experience."
       }
     ],
-    nameTemplate: "The Search for $ITEM in $LOCATION"
+    nameTemplate: "The Search for $FIRSTITEM in $FIRSTLOCATION"
   },
   {
     type: "rescueMission",
     steps: [
-      "$NPC begs you to rescue $TARGET from $LOCATION.",
+      "$FIRSTNPC begs you to rescue $TARGET from $FIRSTLOCATION.",
       "You gear up for the perilous journey...",
-      "You find $TARGET cornered by $MONSTER.",
+      "You find $TARGET cornered by $FIRSTMONSTER.",
       "A fight ensues...",
       "$OUTCOME"
     ],
@@ -2880,68 +2880,68 @@ const sideQuestTemplates = [
         feedback: "$TARGET thanks you with a nod and a smile."
       }
     ],
-    nameTemplate: "The Rescue of $TARGET from $LOCATION"
+    nameTemplate: "The Rescue of $TARGET from $FIRSTLOCATION"
   },
   {
     type: "escortMission",
     steps: [
-      "$NPC asks you to escort them safely to $LOCATION.",
+      "$FIRSTNPC asks you to escort them safely to $FIRSTLOCATION.",
       "You prepare for the journey...",
-      "Along the way, you encounter $MONSTER.",
+      "Along the way, you encounter $FIRSTMONSTER.",
       "A confrontation ensues...",
       "$OUTCOME"
     ],
     outcomes: [
 		{
-			description: "You safely escort $NPC to $LOCATION.",
+			description: "You safely escort $FIRSTNPC to $FIRSTLOCATION.",
 			rewards: ["xp:100", "gold:scaled"],
-			feedback: "$NPC thanks you and you receive some gold!"
+			feedback: "$FIRSTNPC thanks you and you receive some gold!"
 		},
 		{
-			description: "The journey proves too dangerous, and $NPC retreats.",
+			description: "The journey proves too dangerous, and $FIRSTNPC retreats.",
 			rewards: ["xp:100"],
 			feedback: "You fought bravely but gained only experience."
 		},
 		{
-			description: "$MONSTER overwhelms you, and $NPC is lost.",
+			description: "$FIRSTMONSTER overwhelms you, and $FIRSTNPC is lost.",
 			rewards: ["xp:50"],
 			feedback: "You fought bravely but gained only experience."
 		}
     ],
-	nameTemplate: "Escort $NPC to $LOCATION"
+	nameTemplate: "Escort $FIRSTNPC to $FIRSTLOCATION"
   },
   {
     type: "gatheringQuest",
     steps: [
-      "$NPC requests rare $ITEM from $LOCATION.",
+      "$FIRSTNPC requests rare $FIRSTITEM from $FIRSTLOCATION.",
       "You begin your search...",
-      "You find the $ITEM but it's guarded by $MONSTER.",
+      "You find the $FIRSTITEM but it's guarded by $FIRSTMONSTER.",
       "A battle occurs...",
       "$OUTCOME"
     ],
     outcomes: [
 		{
-			description: "You retrieve the $ITEM and return it to $NPC, who pays handsomely for your efforts!",
+			description: "You retrieve the $FIRSTITEM and return it to $FIRSTNPC, who pays handsomely for your efforts!",
 			rewards: ["xp:150", "gold:scaled"],
 			feedback: "Take it!  I don't need it!"
 		},
 		{
-			description: "The $ITEM is destroyed in the scuffle.",
+			description: "The $FIRSTITEM is destroyed in the scuffle.",
 			rewards: ["xp:150"],
 			feedback: "Better luck next time."
 		},
 		{
-			description: "You are unable to defeat the $MONSTER and retreat.",
+			description: "You are unable to defeat the $FIRSTMONSTER and retreat.",
 			rewards: ["xp:50"],
 			feedback: "Better luck next time."
 		}
     ],
-    nameTemplate: "Gathering $ITEM from $LOCATION"  //todo: make a variant of this adds an equippable item?  also maybe quests that yield other char bonuses like stats, or spells.
+    nameTemplate: "Gathering $FIRSTITEM from $FIRSTLOCATION"
   },
   {
     type: "puzzleChallenge",
     steps: [
-      "$NPC challenges you to solve the puzzle at $LOCATION.",
+      "$FIRSTNPC challenges you to solve the puzzle at $FIRSTLOCATION.",
       "You arrive at the puzzle site...",
       "The puzzle is more complex than it seems...",
       "You use your wit and skills...",
@@ -2950,8 +2950,8 @@ const sideQuestTemplates = [
     outcomes: [
 		{
 			description: "You solve the puzzle and reveal a hidden treasure!",
-			rewards: ["xp:150","item:$ITEM"],
-			feedback: "You gained a $ITEM!"
+			rewards: ["xp:150","item:$FIRSTITEM"],
+			feedback: "You gained a $FIRSTITEM!"
 		},
 		{
 			description: "The puzzle proves too difficult, and you give up.",
@@ -2959,25 +2959,25 @@ const sideQuestTemplates = [
 			feedback: "Better luck next time."
 		},
 		{
-			description: "Solving the puzzle triggers a trap, and $MONSTER appears.",
-			rewards: ["xp:150", "item:$ITEM", "gold:scaled"],
-			feedback: "Victory!  You have obtained $Item and a bag of gold!"
+			description: "Solving the puzzle triggers a trap, and $FIRSTMONSTER appears.",
+			rewards: ["xp:150", "item:$FIRSTITEM", "gold:scaled"],
+			feedback: "Victory!  You have obtained $FIRSTITEM and a bag of gold!"
 		}
     ],
-    nameTemplate: "The Puzzle of $LOCATION"
+    nameTemplate: "The Puzzle of $FIRSTLOCATION"
   },
   {
     type: "investigationQuest",
     steps: [
-      "$NPC informs you of strange happenings in $LOCATION.",
-      "You travel to $LOCATION to investigate...",
+      "$FIRSTNPC informs you of strange happenings in $FIRSTLOCATION.",
+      "You travel to $FIRSTLOCATION to investigate...",
       "You gather clues and speak to $TARGET...",
       "You piece together the mystery...",
       "$OUTCOME"
     ],
     outcomes: [
 		{
-			description: "You uncover the truth and reveal the culprit was $NPC the whole time!",
+			description: "You uncover the truth and reveal the culprit was $FIRSTNPC the whole time!",
 			rewards: ["xp:150"],
 			feedback: "Better luck next time."
 		},
@@ -2987,56 +2987,70 @@ const sideQuestTemplates = [
 			feedback: "Better luck next time."
 		},
 		{
-			description: "The investigation leads to a dangerous confrontation with $MONSTER.",
+			description: "The investigation leads to a dangerous confrontation with $FIRSTMONSTER.",
 			rewards: ["xp:150"],
-			feedback: "You managed to dispatch the beast and uncover $ITEM!"
+			feedback: "You managed to dispatch the beast and uncover $FIRSTITEM!"
 		}
     ],
-    nameTemplate: "Investigating $LOCATION"
+    nameTemplate: "Investigating $FIRSTLOCATION"
   },
   {
     type: "monsterHunt",
     steps: [
-      "$NPC approaches you with tales of a terrifying $MONSTER lurking in $LOCATION.",
+      "$FIRSTNPC approaches you with tales of a terrifying $FIRSTMONSTER lurking in $FIRSTLOCATION.",
       "You prepare your gear and set off to hunt the beast...",
-      "Upon reaching $LOCATION, you track the $MONSTER's trail...",
-      "You finally encounter the $MONSTER in its lair...",
+      "Upon reaching $FIRSTLOCATION, you track the $FIRSTMONSTER's trail...",
+      "You finally encounter the $FIRSTMONSTER in its lair...",
       "An intense battle ensues...",
       "$OUTCOME"
     ],
     outcomes: [
 		{
-			description: "You slay the $MONSTER and claim its trophy.",
-			rewards: ["xp:150","item:$ITEM"],
-			feedback: "You gained a $ITEM!"
+			description: "You slay the $FIRSTMONSTER and claim its trophy.",
+			rewards: ["xp:150","item:$FIRSTITEM"],
+			feedback: "You gained a $FIRSTITEM!"
 		},
 		{
-			description: "The $MONSTER escapes, leaving you to plot your next hunt.",
+			description: "The $FIRSTMONSTER escapes, leaving you to plot your next hunt.",
 			rewards: ["xp:75"],
 	        feedback: "Better luck next time."
 		},
 		{
-			description: "You are defeated by the $MONSTER and barely escape with your life.",
+			description: "You are defeated by the $FIRSTMONSTER and barely escape with your life.",
 			rewards: ["xp:50"],
 			feedback: "You fought bravely but gained only experience."
 		}
     ],
-    nameTemplate: "The Hunt for the $MONSTER in $LOCATION"
+    nameTemplate: "The Hunt for the $FIRSTMONSTER in $FIRSTLOCATION"
   },
 {
   type: "epicParody",
   steps: [
-    "$NPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
-    "You embark on a long journey with your loyal companions...",
-    "You traverse the dangerous $LOCATION, facing many perils...",
+    "$FIRSTNPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
+    "You embark on a long journey with 9 companions, including your best friend $FRIEND...",
+    "You traverse the dangerous $FIRSTLOCATION, facing many perils...",
     "You reach $TOWN, where you rest and gather supplies...",
-    "You continue your journey through the treacherous $LOCATIONTOO...",
-    "You encounter $MONSTER, who tries to take the ring...",
+    "You continue your journey through the treacherous $SECONDLOCATION...",
+    "You encounter $FIRSTMONSTER, who tries to take the ring...",
     "You narrowly escape and press on towards $MOUNT_DOOM...",
-	"$NPCTOO, who has long sought the ring tracks you down...",
-	"You manage to subdue $NPCTOO and convince them to guide you to $MOUNT_DOOM...",
-    "You climb the steep slopes of $MOUNT_DOOM, battling exhaustion...",
-    "At the summit, you prepare to destroy the ring, but $NPCTOO appears to stop you...",
+	"$SECONDNPC, who has long sought the ring tracks you down...",
+	"You manage to subdue $SECONDNPC and convince them to guide you to $MOUNT_DOOM...",
+	"$SECONDNPC sows mistrust between you and your best friend $FRIEND...",
+	"Deceived by $SECONDNPC, you send $FRIEND away...",
+	"$SECONDNPC who now intends to kill you and take the ring, leads you to...",
+	"$THIRDLOCATION.  The lair of $SECONDMONSTER!  You're trapped!",
+	"You fight $SECONDMONSTER and managed to escape its lair...",
+	"... and are ambushed by $SECONDNPC!  A fight ensues...",
+	"In the scuffle $SECONDNPC is thrown off a cliff!  You venture on...",
+	"Just then, you are incapacitated by $SECONDMONSTER, and left for dead.",
+	"Meanwhile...  $FRIEND, who was heading back home from your betrayal finds...",
+	"The evidence of $SECONDNPC's treachery!",
+	"$FRIEND, enraged and with new determination manages to track you down and rescues you!",
+	"When you come to, you see $FRIEND and appologize.  \"It's over, It's lost!\" you say...",
+	"\"Begging your pardon, but it's not lost, I took it!  Only for safe keeping!\"",
+	"After a beat, $FRIEND gives you back the ring and you venture onward toward $MOUNT_DOOM...",
+    "You climb the steep steppes of $MOUNT_DOOM, battling exhaustion...",
+    "At the summit, you prepare to destroy the ring, but $SECONDNPC appears to stop you!",
     "A dramatic confrontation ensues...",
     "$OUTCOME"
   ],
@@ -3047,7 +3061,7 @@ const sideQuestTemplates = [
       feedback: "You retire, comforted that the evil has been driven from the land... for now."
     },
     {
-      description: "$NPCTOO steals the ring and escapes, leaving you in despair.",
+      description: "$SECONDNPC steals the ring and escapes, leaving you in despair.",
       rewards: ["xp:150"],
       feedback: "Oh no! What will become of the world?"
     },

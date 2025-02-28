@@ -219,97 +219,209 @@ function sideQuestStorySample() {
 }
 
 function doSideQuest() {
-  const sideQuest = generateSideQuest();
-  game.sideQuest = sideQuest; //for debugging
+    const sideQuest = generateSideQuest();
+    game.sideQuest = sideQuest;
 
-  // Calculate total steps and initial delay
-  const totalSteps = sideQuest.steps.length;
-  const initialDelay = 5000; // initial delay in milliseconds
-  const maxTotalDelay = 10000; // maximum total delay in milliseconds
-  const ratio = Math.pow(maxTotalDelay / initialDelay, 1 / (totalSteps - 1));
+    // Define addRandomness before using it
+    const addRandomness = (baseDelay) => RandomLow(baseDelay) + RandomHigh(baseDelay) / 2;
 
-//----need to add custom times to templates and defer to automatic timers if no times provided in template.  also the initial quest start step is too fast.  battles to fast. and mundane notificaionts too long...
+    // Calculate total time for all steps to set QuestBar maximum
+    const totalTime = sideQuest.steps.reduce((sum, step) => {
+        const delay = step.time || 5000; // Default to 5000ms if no time specified
+        return sum + addRandomness(delay);
+    }, 0);
+    QuestBar.reset(totalTime, 0); // Initialize QuestBar with total time as max
+    game.sideQuestCumulativeTime = 0; // Track cumulative progress
 
-  const addRandomness = (baseDelay) => {
-    return RandomLow(baseDelay) + RandomHigh(baseDelay) / 2;
-  };
+    const initialDelay = 5000;
+    const maxTotalDelay = 10000;
+    const ratio = totalTime > 1 ? Math.pow(maxTotalDelay / initialDelay, 1 / (totalTime - 1)) : 1;
 
-  // Create side quest steps with progressively reduced added time and randomness
-  game.sideQuestSteps = sideQuest.steps.map((step, index) => {
-    const delay = addRandomness(initialDelay * Math.pow(ratio, index));
-    return () => Task(step, delay);
-  });
+    game.sideQuestSteps = sideQuest.steps.map((step, index) => {
+        const baseDelay = step.time || (initialDelay * Math.pow(ratio, index));
+        const delay = addRandomness(baseDelay);
+        return () => {
+            Task(step.text, delay, () => {
+                // Apply step-specific rewards immediately
+                if (step.reward) {
+                    applyStepRewards(step.reward);
+                }
+                // Update QuestBar progress
+                game.sideQuestCumulativeTime += delay;
+                QuestBar.reposition(game.sideQuestCumulativeTime);
+            });
+        };
+    });
 
-  game.task = "sideQuest";
-  
-  // Use the already substituted outcome
-  game.sideQuestOutcome = sideQuest.outcome;
-  game.sideQuestItem = sideQuest.rawData.item || "unknown item"; // Use the generated item directly
+    game.task = "sideQuest";
+    game.sideQuestOutcome = sideQuest.outcome;
+    game.sideQuestItem = sideQuest.rawData.item || "unknown item";
 
-  const caption = `Side Quest: ${sideQuest.name}`;
-  game.Quests.push(caption);
-  game.bestquest = caption;
-  Quests.AddUI(caption);
-  Log('Commencing quest: ' + caption);
+    const caption = `Side Quest: ${sideQuest.name}`;
+    game.Quests.push(caption);
+    game.bestquest = caption;
+    Quests.AddUI(caption);
+    Log('Commencing quest: ' + caption);
 }
 
+function processSteps(stepTemplates) {
+  let result = [];
+  for (const stepTemplate of stepTemplates) {
+    if (Array.isArray(stepTemplate)) {
+      // Choice array: select one step based on weights
+      const totalWeight = stepTemplate.reduce((sum, step) => sum + (step.weight || 1), 0);
+      let rand = Random(totalWeight);
+      for (const step of stepTemplate) {
+        rand -= (step.weight || 1);
+        if (rand < 0) {
+          result.push(step);
+          break;
+        }
+      }
+    } else if (stepTemplate.chance === undefined || Random(1) < stepTemplate.chance) {
+      // Single step: include if no chance specified or chance succeeds
+      result.push(stepTemplate);
+    }
+  }
+  return result;
+}
+
+// Reward Parsing and Application Functions
+function parseRewards(rewardStrings) {
+    if (!rewardStrings) return [];
+    if (!Array.isArray(rewardStrings)) rewardStrings = [rewardStrings];
+    return rewardStrings.map(reward => {
+        const parts = reward.split(':');
+        const type = parts[0];
+        const probability = parts[1] ? parseFloat(parts[1]) : 1.0; // Use parseFloat for decimals
+        return { type, probability: isNaN(probability) ? 1.0 : probability }; // Default to 1.0 if NaN
+    });
+}
+
+function applyXpReward(probability) {
+    if (Odds(probability * 100, 100)) { // Use Odds for probability check (0-100 scale)
+        const xpGain = Random(101) + 50; // 50-150 XP using Random
+        ExpBar.increment(xpGain);
+        console.log(`Gained ${xpGain} XP`);
+    }
+}
+
+function applyItemReward(probability) {
+    if (Odds(probability * 100, 100)) {
+        const item = SpecialItem(); // Existing function
+        Add(Inventory, item, 1);
+        console.log(`Gained ${item}`);
+    }
+}
+
+function applyEquipReward(probability) {
+    if (Odds(probability * 100, 100)) {
+        WinEquip(); // Existing function
+        console.log(`Gained new equipment: ${game.bestequip}`);
+    }
+}
+
+function applyStatReward(probability) {
+    if (Odds(probability * 100, 100)) {
+        const stat = Pick(K.PrimeStats); // Use Pick for random selection
+        Add(Stats, stat, 1);
+        console.log(`Increased ${stat} by 1`);
+    }
+}
+
+function applyGoldReward(probability, isNegative = false) {
+    if (Odds(probability * 100, 100)) {
+        const goldAmount = calcScaledGold(); // Existing function
+        if (isNegative) {
+            addScaledGold(true); // Subtract gold
+            console.log(`Lost ${goldAmount} gold`);
+        } else {
+            addScaledGold(); // Add gold
+            console.log(`Gained ${goldAmount} gold`);
+        }
+    }
+}
+
+function applyStepRewards(rewardStrings) {
+	console.log("Applying step rewards:", rewardStrings);
+    const rewards = parseRewards(rewardStrings);
+    rewards.forEach(reward => {
+        const { type, probability } = reward;
+        console.log("Processing " + type + " with probability " + probability);
+        switch (type) {
+            case 'xp': applyXpReward(probability); break;
+            case 'item': applyItemReward(probability); break;
+            case 'equip': applyEquipReward(probability); break;
+            case 'stat': applyStatReward(probability); break;
+            case 'gold': applyGoldReward(probability); break;
+            case '-gold': applyGoldReward(probability, true); break;
+            default: console.warn(`Unknown reward type: ${type}`);
+        }
+    });
+}
 
 //---------
 //---------New Side Quest system
 function generateSideQuest() {
-  const template = Pick(sideQuestTemplates);
-  const npc1 = coolName();
-  const npc2 = GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark']));
-  const item1 = coolItem();
-  const item2 = coolItem();
-  const location1 = coolPlace();
-  const location2 = coolPlace();
-  const location3 = coolPlace();
-  const town = GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false);
-  const mountDoom = GenerateLocationName(Pick([1, 2]), 'dark', false);
-  const monster1 = NamedMonster();
-  const monster2 = NamedMonster();
-  const target = coolName();
-  const friend = splitName(coolName());
+    const template = Pick(sideQuestTemplates);
+    const subs = {
+        "$FIRSTNPC": coolName(),
+        "$SECONDNPC": GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark'])),
+        "$FIRSTITEM": coolItem(),
+        "$SECONDITEM": coolItem(),
+        "$FIRSTLOCATION": coolPlace(),
+        "$SECONDLOCATION": coolPlace(),
+        "$THIRDLOCATION": coolPlace(),
+        "$TOWN": GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false),
+        "$MOUNT_DOOM": GenerateLocationName(Pick([1, 2]), 'dark', false),
+        "$FIRSTMONSTER": NamedMonster(),
+        "$SECONDMONSTER": NamedMonster(),
+        "$TARGET": coolName(),
+        "$FRIEND": splitName(coolName())
+    };
 
-  // Substitution map
-  const subs = {
-    "$FIRSTNPC": npc1,
-    "$SECONDNPC": npc2,
-    "$FIRSTITEM": item1,
-    "$SECONDITEM": item2,
-    "$FIRSTLOCATION": location1,
-    "$SECONDLOCATION": location2,
-    "$THIRDLOCATION": location3,
-    "$TOWN": town,
-    "$MOUNT_DOOM": mountDoom,
-    "$FIRSTMONSTER": monster1,
-    "$SECONDMONSTER": monster2,
-    "$TARGET": target,
-    "$FRIEND": friend
-  };
+    const rawOutcome = Pick(template.outcomes);
+    const outcome = {
+        description: substituteString(rawOutcome.description, subs),
+        rewards: rawOutcome.rewards.map(reward => substituteString(reward, subs)),
+        feedback: substituteString(rawOutcome.feedback, subs)
+    };
 
-  // Pick a raw outcome object
-  const rawOutcome = Pick(template.outcomes);
+    // Process main steps
+    const mainSteps = processSteps(template.steps);
 
-  // Substitute placeholders in description, rewards, and feedback
-  const outcome = {
-    description: substituteString(rawOutcome.description, subs),
-    rewards: rawOutcome.rewards.map(reward => substituteString(reward, subs)),
-    feedback: substituteString(rawOutcome.feedback, subs)
-  };
+    // Insert generic random steps after the first two steps
+    const maxRandomSteps = 2; // Limit for balance
+    let randomStepsInserted = 0;
+    const finalSteps = [];
 
-  // Substitute steps
-  const steps = template.steps.map(step => substituteString(step, subs, outcome.description));
+    mainSteps.forEach((step, index) => {
+        // Add the step first
+        finalSteps.push(step);
 
-  const questName = substituteString(template.nameTemplate, subs);
+        // Only insert random steps after the first two regular steps (index >= 2)
+        if (index >= 2 && randomStepsInserted < maxRandomSteps && Odds(20, 100)) { // 20% chance
+            const randomStep = Pick(genericSteps);
+            finalSteps.push(randomStep);
+            randomStepsInserted++;
+        }
+    });
 
-  return {
-    name: questName,
-    steps,
-    outcome, // {description, rewards, feedback}
-    rawData: { npc1, npc2, item1, item2, location1, location2, location3, town, mountDoom, monster1, monster2, target, friend }
-  };
+    // Substitute text
+    const steps = finalSteps.map(step => ({
+        text: substituteString(step.text, subs, step.text.includes("$OUTCOME") ? outcome.description : null),
+        time: step.time,
+        reward: step.reward // Preserve reward property
+    }));
+
+    const questName = substituteString(template.nameTemplate, subs);
+
+    return {
+        name: questName,
+        steps,
+        outcome,
+        rawData: { subs }
+    };
 }
 
 // Helper function to substitute placeholders
@@ -506,109 +618,114 @@ function EquipPrice() {
 }
 
 function Dequeue() {
-  while (TaskDone()) {
-    var old = game.task;
-    generateHash(game).then(hash => { updateMandelbulb(hash) });
-    if (game.task === 'sideQuest') {
-      if (game.sideQuestSteps && game.sideQuestSteps.length > 0) {
-        const nextStep = game.sideQuestSteps.shift();
-        nextStep();
-        break;
-      } else {
-        game.task = '';
-        delete game.sideQuestSteps;
+    while (TaskDone()) {
+        // Execute onComplete callback for the just-completed task
+        if (game.onTaskComplete) {
+            game.onTaskComplete();
+            delete game.onTaskComplete;
+        }
 
-        if (game.sideQuestOutcome) {
-          if (game.sideQuestOutcome.rewards) {
-            game.sideQuestOutcome.rewards.forEach(applyReward);
-          }
-          Task(game.sideQuestOutcome.feedback || "Quest completed.", 2000);
-          QuestBar.reposition(QuestBar.Max());
-          Log('Quest completed: ' + game.bestquest);
-          Quests.CheckAll();
-          delete game.sideQuestOutcome;
+        var old = game.task;
+        generateHash(game).then(hash => { updateMandelbulb(hash) });
+        if (game.task === 'sideQuest') {
+            if (game.sideQuestSteps && game.sideQuestSteps.length > 0) {
+                const nextStep = game.sideQuestSteps.shift();
+                nextStep(); // Execute the next step
+                break;
+            } else {
+                game.task = '';
+                delete game.sideQuestSteps;
+                if (game.sideQuestOutcome) {
+                    if (game.sideQuestOutcome.rewards) {
+                        game.sideQuestOutcome.rewards.forEach(applyReward);
+                    }
+                    Task(game.sideQuestOutcome.feedback || "Quest completed.", 2000);
+                    QuestBar.reposition(QuestBar.Max());
+                    Log('Quest completed: ' + game.bestquest);
+                    Quests.CheckAll();
+                    delete game.sideQuestOutcome;
+                    delete game.sideQuestCumulativeTime;
+                }
+                break;
+            }
+        } else if (Split(game.task, 0) === 'kill') {
+            if (Split(game.task, 3) === '*') {
+                WinItem();
+            } else if (Split(game.task, 3)) {
+                if (Split(game.task, 3).indexOf(',') > -1) {
+                    var mItem = Pick(Split(game.task, 3).split(','));
+                    if (mItem === '*') {
+                        WinItem();
+                    } else {
+                        Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(mItem)), 1);
+                    }
+                } else {
+                    Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(Split(game.task, 3))), 1);
+                }
+            }
+        } else if (game.task === 'buying') {
+            Add(Inventory, 'Gold', -EquipPrice());
+            WinEquip();
+        } else if (game.task === 'market' || game.task === 'sell') {
+            if (game.task === 'sell') {
+                var amt = GetI(Inventory, 1) * GetI(Traits, 'Level');
+                if (Pos(' of ', Inventory.label(1)) > 0) {
+                    amt *= (1 + RandomLow(10)) * (1 + RandomLow(GetI(Traits, 'Level')));
+                }
+                Inventory.remove1();
+                Add(Inventory, 'Gold', amt);
+            }
+            if (Inventory.length() > 1) {
+                Inventory.scrollToTop();
+                Task('Selling ' + Indefinite(Inventory.label(1), GetI(Inventory, 1)), 1 * 1000);
+                game.task = 'sell';
+                break; // Exit loop after setting sell task
+            }
         }
-        break;
-      }
-    } else if (Split(game.task, 0) === 'kill') {
-      if (Split(game.task, 3) === '*') {
-        WinItem();
-      } else if (Split(game.task, 3)) {
-        if (Split(game.task, 3).indexOf(',') > -1) {
-          var mItem = Pick(Split(game.task, 3).split(','));
-          if (mItem === '*') {
-            WinItem();
-          } else {
-            Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(mItem)), 1);
-          }
-        } else {
-          Add(Inventory, LowerCase(Split(game.task, 1) + ' ' + ProperCase(Split(game.task, 3))), 1);
-        }
-      }
-    } else if (game.task === 'buying') {
-      Add(Inventory, 'Gold', -EquipPrice());
-      WinEquip();
-    } else if (game.task === 'market' || game.task === 'sell') {
-      if (game.task === 'sell') {
-        var amt = GetI(Inventory, 1) * GetI(Traits, 'Level');
-        if (Pos(' of ', Inventory.label(1)) > 0) {
-          amt *= (1 + RandomLow(10)) * (1 + RandomLow(GetI(Traits, 'Level')));
-        }
-        Inventory.remove1();
-        Add(Inventory, 'Gold', amt);
-      }
-      if (Inventory.length() > 1) {
-        Inventory.scrollToTop();
-        Task('Selling ' + Indefinite(Inventory.label(1), GetI(Inventory, 1)), 1 * 1000);
-        game.task = 'sell';
-        break; // Exit loop after setting sell task
-      }
-    }
 
-    if (!game.task.startsWith('sideQuest')) {
-      game.task = '';
-    }
-
-    if (game.queue.length > 0) {
-      var a = Split(game.queue[0], 0);
-      var n = StrToInt(Split(game.queue[0], 1));
-      var s = Split(game.queue[0], 2);
-      if (a === 'task' || a === 'plot') {
-        game.queue.shift();
-        if (a === 'plot') {
-          CompleteAct();
-          s = 'Loading ' + game.bestplot;
+        if (!game.task.startsWith('sideQuest')) {
+            game.task = '';
         }
-        Task(s, n * 1000);
-        break; // Exit loop after queuing a new task
-      } else {
-        throw 'Unknown queue action: ' + a;
-      }
-    } else if (EncumBar.done()) {
-      Task('Heading to market to sell loot', 4 * 1000);
-      game.task = 'market';
-      break; // Exit loop after setting market task
-    } else if (!game.task && Pos('kill|', old) <= 0 && old !== 'heading') {
-      if (GetI(Inventory, 'Gold') > EquipPrice()) {
-        Task('Negotiating purchase of better equipment', 5 * 1000);
-        game.task = 'buying';
-        break; // Exit loop after setting buying task
-      } else {
-        Task('Heading to the killing fields', 4 * 1000);
-        game.task = 'heading';
-        break; // Exit loop after setting heading task
-      }
-    } else if (!game.task) {
-      var nn = GetI(Traits, 'Level');
-      var t = MonsterTask(nn);
-      var InventoryLabelAlsoGameStyleTag = 3;
-      nn = Math.floor((2 * InventoryLabelAlsoGameStyleTag * t.level * 1000) / nn);
-      Task('Executing ' + t.description, nn);
-      break; // Exit loop after setting monster task
+
+if (game.queue.length > 0) {
+            var a = Split(game.queue[0], 0);
+            var n = StrToInt(Split(game.queue[0], 1));
+            var s = Split(game.queue[0], 2);
+            if (a === 'task' || a === 'plot') {
+                game.queue.shift();
+                if (a === 'plot') {
+                    CompleteAct();
+                    s = 'Loading ' + game.bestplot;
+                }
+                Task(s, n * 1000);
+                break;
+            } else {
+                throw 'Unknown queue action: ' + a;
+            }
+        } else if (EncumBar.done()) {
+            Task('Heading to market to sell loot', 4 * 1000);
+            game.task = 'market';
+            break;
+        } else if (!game.task && Pos('kill|', old) <= 0 && old !== 'heading') {
+            if (GetI(Inventory, 'Gold') > EquipPrice()) {
+                Task('Negotiating purchase of better equipment', 5 * 1000);
+                game.task = 'buying';
+                break;
+            } else {
+                Task('Heading to the killing fields', 4 * 1000);
+                game.task = 'heading';
+                break;
+            }
+        } else if (!game.task) {
+            var nn = GetI(Traits, 'Level');
+            var t = MonsterTask(nn);
+            var InventoryLabelAlsoGameStyleTag = 3;
+            nn = Math.floor((2 * InventoryLabelAlsoGameStyleTag * t.level * 1000) / nn);
+            Task('Executing ' + t.description, nn);
+            break;
+        }
     }
-  }
 }
-
 
 function Put(list, key, value) {
   if (typeof key === typeof 1)
@@ -1046,55 +1163,55 @@ function generateItemQuest(verb, itemFunc, qty = 1, definite = false) {
   return `${verb} ${article}`;
 }
 
-function CompleteQuest() {
-  QuestBar.reset(50 + Random(100));
-  if (Quests.length()) {
-    Log('Quest completed: ' + game.bestquest);
-    Quests.CheckAll();
-    [WinSpell, WinEquip, WinStat, WinItem][Random(4)]();
-  }
-  while (Quests.length > 99) Quests.remove0();
+// Updated CompleteQuest with an optional skipNew parameter for debugging sidequests
+function CompleteQuest(skipNew = false) {
+    QuestBar.reset(50 + Random(100));
+    if (Quests.length()) {
+        Log('Quest completed: ' + game.bestquest);
+        Quests.CheckAll();
+        [WinSpell, WinEquip, WinStat, WinItem][Random(4)](); // Apply a reward
+    }
+    while (Quests.length > 99) Quests.remove0();
 
-  game.questmonster = '';
+    game.questmonster = '';
 
-  const questGenerators = [
-    () => generateMonsterQuest('Exterminate'),
-    () => generateItemQuest('Seek', () => InterestingItem(), 1, true),
-    () => generateItemQuest('Deliver this', BoringItem),
-    () => generateItemQuest('Fetch me', BoringItem, 1),
-    () => { let caption = generateMonsterQuest('Placate'); game.questmonster = ''; return caption; },
-    () => generateItemQuest('Restore', InterestingItem, 2, true),
-    () => generateItemQuest('Repair these', BoringItem, 3),
-    () => generateItemQuest('Upgrade', InterestingItem, 1, true),
-    () => generateItemQuest('Decommision', InterestingItem, 1),
-    () => generateItemQuest('Sign for delivery of', BoringItem, Random(42) + 1),
-    () => generateItemQuest('Ship', BoringItem, Random(20) + 1) + " to the village of " + GenerateLocationName() + ".",
-    () => "Recover the CEO's " + InterestingItem(),
-    () => "Assist the Executive with " + Indefinite(InterestingItem(), Random(2) + 1),
-    () => { let caption = generateMonsterQuest('Resolve tickets about'); game.questmonster = ''; return caption; },
-    () => generateItemQuest('Implement a policy for', SpecialItem, 1, true),
-    () => generateItemQuest('Find replacement parts for', SpecialItem, 1, true),
-    () => generateItemQuest('Purchase', BoringItem, Random(100) + 1),
-    () => Random(2) === 0 ? randomTask() : randomTaskToo(),
-    () => diplomaticMission(),
-    () => { doSideQuest(); } // No caption here, doSideQuest handles it
-  ];
+    if (!skipNew) {
+        const questGenerators = [
+            () => generateMonsterQuest('Exterminate'),
+            () => generateItemQuest('Seek', () => InterestingItem(), 1, true),
+            () => generateItemQuest('Deliver this', BoringItem),
+            () => generateItemQuest('Fetch me', BoringItem, 1),
+            () => { let caption = generateMonsterQuest('Placate'); game.questmonster = ''; return caption; },
+            () => generateItemQuest('Restore', InterestingItem, 2, true),
+            () => generateItemQuest('Repair these', BoringItem, 3),
+            () => generateItemQuest('Upgrade', InterestingItem, 1, true),
+            () => generateItemQuest('Decommision', InterestingItem, 1),
+            () => generateItemQuest('Sign for delivery of', BoringItem, Random(42) + 1),
+            () => generateItemQuest('Ship', BoringItem, Random(20) + 1) + " to the village of " + GenerateLocationName() + ".",
+            () => "Recover the CEO's " + InterestingItem(),
+            () => "Assist the Executive with " + Indefinite(InterestingItem(), Random(2) + 1),
+            () => { let caption = generateMonsterQuest('Resolve tickets about'); game.questmonster = ''; return caption; },
+            () => generateItemQuest('Implement a policy for', SpecialItem, 1, true),
+            () => generateItemQuest('Find replacement parts for', SpecialItem, 1, true),
+            () => generateItemQuest('Purchase', BoringItem, Random(100) + 1),
+            () => Random(2) === 0 ? randomTask() : randomTaskToo(),
+            () => diplomaticMission(),
+            () => { doSideQuest(); } // No caption here, doSideQuest handles it
+        ];
+        const caption = questGenerators[Random(questGenerators.length)]();
+        if (!game.Quests) game.Quests = [];
+        while (game.Quests.length > 99) game.Quests.shift();
 
-  const caption = questGenerators[Random(questGenerators.length)]();
-  if (!game.Quests) game.Quests = [];
-  while (game.Quests.length > 99) game.Quests.shift();
+        if (caption) {
+            game.Quests.push(caption);
+            game.bestquest = caption;
+            Quests.AddUI(caption);
+            Log('Commencing quest: ' + caption);
+        }
+    }
 
-  // Only add caption if it exists (side quests handle their own)
-  if (caption) {
-    game.Quests.push(caption);
-    game.bestquest = caption;
-    Quests.AddUI(caption);
-    Log('Commencing quest: ' + caption);
-  }
-
-  SaveGame();
+    SaveGame();
 }
-
 
 function CompleteAct() {
   Plots.CheckAll();
@@ -1117,12 +1234,16 @@ function Log(line) {
   // TODO: and now what?
 }
 
-function Task(caption, msec) {
-  game.kill = caption + "...";
-  if (Kill)
-    Kill.text(game.kill);
-  Log(game.kill);
-  TaskBar.reset(msec);
+function Task(caption, msec, onComplete) {
+    game.kill = caption + "...";
+    if (Kill) Kill.text(game.kill);
+    Log(game.kill);
+    TaskBar.reset(msec);
+    if (onComplete) {
+        game.onTaskComplete = onComplete;
+    } else {
+        delete game.onTaskComplete;
+    }
 }
 
 function Add(list, key, value) {

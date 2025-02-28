@@ -2823,17 +2823,47 @@ K.KlassTitles = [
    "Exiled"];
 
 
+//---quest system generic steps
+const genericSteps = [
+    { 
+        text: "You meet a wandering merchant and buy some supplies.", 
+        time: 5000, 
+        reward: ['item:1.0', '-gold:1.0']
+    },
+    { 
+        text: "You find a hidden cache with some gold.", 
+        time: 4000, 
+        reward: ['gold:1.0'] // 100% chance to gain gold
+    },
+    { 
+        text: "You are attacked by bandits!", 
+        time: 6000, 
+        reward: ['xp:1.0'] // 100% chance for XP from fighting
+    },
+    { 
+        text: "You rest by a river and regain some strength.", 
+        time: 5000, 
+        reward: ['xp:0.5', 'stat:0.2'] // 50% chance for XP, 20% for a stat
+    }
+];
+
 
 //---------SIDE QUEST TEMPLATES
+//---
 const sideQuestTemplates = [
   {
     type: "treasureHunt",
     steps: [
-      "You are approached by $FIRSTNPC, who speaks of treasure hidden in $FIRSTLOCATION.",
-      '"You seek the $FIRSTITEM..." they whisper.',
-      "You set out on your journey...",
-      "You arrive and discover...",
-      "$OUTCOME"
+      { text: "You are approached by $FIRSTNPC, who speaks of treasure hidden in $FIRSTLOCATION.", time: 10000 }, // Long initial read
+      { text: '"You seek the $FIRSTITEM..." they whisper.', time: 5000 },
+      { text: "You set out on your journey...", time: 4000 },
+      [
+        { text: "You meet a merchant who offers a map to aid your quest.", time: 4000, weight: 2, reward: ['gold:0.5', '-gold:0.5'] }, // Trade chance
+        { text: "You are ambushed by bandits en route!", time: 5000, weight: 1, reward: ['xp:1.0'] }, // Combat XP
+        { text: "You stumble upon a hidden shortcut.", time: 3000, weight: 1, reward: ['xp:0.3'] } // Small XP for efficiency
+      ],
+      { text: "You arrive and discover...", time: 3000 },
+      { text: "$OUTCOME", time: 7500 }
     ],
     outcomes: [
       {
@@ -2857,11 +2887,15 @@ const sideQuestTemplates = [
   {
     type: "rescueMission",
     steps: [
-      "$FIRSTNPC begs you to rescue $TARGET from $FIRSTLOCATION.",
-      "You gear up for the perilous journey...",
-      "You find $TARGET cornered by $FIRSTMONSTER.",
-      "A fight ensues...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC begs you to rescue $TARGET from $FIRSTLOCATION.", time: 10000 },
+      { text: "You gear up for the perilous journey...", time: 4000 },
+      [
+        { text: "You encounter a storm that slows your progress.", time: 8000, weight: 1, reward: ['xp:0.5'] }, // Effort XP
+        { text: "A friendly traveler shares rumors of $FIRSTLOCATION.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Info XP
+      ],
+      { text: "You find $TARGET cornered by $FIRSTMONSTER.", time: 5000 },
+      { text: "A fight ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
       {
@@ -2885,193 +2919,209 @@ const sideQuestTemplates = [
   {
     type: "escortMission",
     steps: [
-      "$FIRSTNPC asks you to escort them safely to $FIRSTLOCATION.",
-      "You prepare for the journey...",
-      "Along the way, you encounter $FIRSTMONSTER.",
-      "A confrontation ensues...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC asks you to escort them safely to $FIRSTLOCATION.", time: 10000 },
+      { text: "You prepare for the journey...", time: 4000 },
+      { text: "Along the way, you encounter $FIRSTMONSTER.", time: 4000, chance: 0.9, reward: ['xp:0.8'] }, // Combat XP chance
+      { text: "A confrontation ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
-		{
-			description: "You safely escort $FIRSTNPC to $FIRSTLOCATION.",
-			rewards: ["xp:100", "gold:scaled"],
-			feedback: "$FIRSTNPC thanks you and you receive some gold!"
-		},
-		{
-			description: "The journey proves too dangerous, and $FIRSTNPC retreats.",
-			rewards: ["xp:100"],
-			feedback: "You fought bravely but gained only experience."
-		},
-		{
-			description: "$FIRSTMONSTER overwhelms you, and $FIRSTNPC is lost.",
-			rewards: ["xp:50"],
-			feedback: "You fought bravely but gained only experience."
-		}
+      {
+        description: "You safely escort $FIRSTNPC to $FIRSTLOCATION.",
+        rewards: ["xp:100", "gold:scaled"],
+        feedback: "$FIRSTNPC thanks you and you receive some gold!"
+      },
+      {
+        description: "The journey proves too dangerous, and $FIRSTNPC retreats.",
+        rewards: ["xp:100"],
+        feedback: "You fought bravely but gained only experience."
+      },
+      {
+        description: "$FIRSTMONSTER overwhelms you, and $FIRSTNPC is lost.",
+        rewards: ["xp:50"],
+        feedback: "You fought bravely but gained only experience."
+      }
     ],
-	nameTemplate: "Escort $FIRSTNPC to $FIRSTLOCATION"
+    nameTemplate: "Escort $FIRSTNPC to $FIRSTLOCATION"
   },
   {
     type: "gatheringQuest",
     steps: [
-      "$FIRSTNPC requests rare $FIRSTITEM from $FIRSTLOCATION.",
-      "You begin your search...",
-      "You find the $FIRSTITEM but it's guarded by $FIRSTMONSTER.",
-      "A battle occurs...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC requests rare $FIRSTITEM from $FIRSTLOCATION.", time: 10000 },
+      { text: "You begin your search...", time: 4000 },
+      [
+        { text: "You spot a rival adventurer also seeking the $FIRSTITEM.", time: 4000, weight: 1, reward: ['xp:0.5'] }, // Competition XP
+        { text: "You find clues leading to the $FIRSTITEM’s location.", time: 5000, weight: 2, reward: ['xp:0.3'] } // Clue XP
+      ],
+      { text: "You find the $FIRSTITEM but it's guarded by $FIRSTMONSTER.", time: 4000 },
+      { text: "A battle occurs...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
-		{
-			description: "You retrieve the $FIRSTITEM and return it to $FIRSTNPC, who pays handsomely for your efforts!",
-			rewards: ["xp:150", "gold:scaled"],
-			feedback: "Take it!  I don't need it!"
-		},
-		{
-			description: "The $FIRSTITEM is destroyed in the scuffle.",
-			rewards: ["xp:150"],
-			feedback: "Better luck next time."
-		},
-		{
-			description: "You are unable to defeat the $FIRSTMONSTER and retreat.",
-			rewards: ["xp:50"],
-			feedback: "Better luck next time."
-		}
+      {
+        description: "You retrieve the $FIRSTITEM and return it to $FIRSTNPC, who pays handsomely for your efforts!",
+        rewards: ["xp:150", "gold:scaled"],
+        feedback: "Take it! I don't need it!"
+      },
+      {
+        description: "The $FIRSTITEM is destroyed in the scuffle.",
+        rewards: ["xp:150"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "You are unable to defeat the $FIRSTMONSTER and retreat.",
+        rewards: ["xp:50"],
+        feedback: "Better luck next time."
+      }
     ],
     nameTemplate: "Gathering $FIRSTITEM from $FIRSTLOCATION"
   },
   {
     type: "puzzleChallenge",
     steps: [
-      "$FIRSTNPC challenges you to solve the puzzle at $FIRSTLOCATION.",
-      "You arrive at the puzzle site...",
-      "The puzzle is more complex than it seems...",
-      "You use your wit and skills...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC challenges you to solve the puzzle at $FIRSTLOCATION.", time: 10000 },
+      { text: "\"Challenge accepted!\" you say...", time: 3000 },
+      { text: "You arrive at the puzzle site...", time: 5000 },
+      { text: "The puzzle is more complex than it seems...", time: 4000, chance: 0.7, reward: ['xp:0.5'] }, // Effort XP
+      { text: "You use your wit and skills...", time: 6000, reward: ['xp:0.8', 'stat:0.2'] }, // Thinking XP + stat chance
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
-		{
-			description: "You solve the puzzle and reveal a hidden treasure!",
-			rewards: ["xp:150","item:$FIRSTITEM"],
-			feedback: "You gained a $FIRSTITEM!"
-		},
-		{
-			description: "The puzzle proves too difficult, and you give up.",
-			rewards: ["xp:50"],
-			feedback: "Better luck next time."
-		},
-		{
-			description: "Solving the puzzle triggers a trap, and $FIRSTMONSTER appears.",
-			rewards: ["xp:150", "item:$FIRSTITEM", "gold:scaled"],
-			feedback: "Victory!  You have obtained $FIRSTITEM and a bag of gold!"
-		}
+      {
+        description: "You solve the puzzle and reveal a hidden treasure!",
+        rewards: ["xp:150", "item:$FIRSTITEM"],
+        feedback: "You gained a $FIRSTITEM!"
+      },
+      {
+        description: "The puzzle proves too difficult, and you give up.",
+        rewards: ["xp:50"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "Solving the puzzle triggers a trap, and $FIRSTMONSTER appears.",
+        rewards: ["xp:150", "item:$FIRSTITEM", "gold:scaled"],
+        feedback: "Victory! You have obtained $FIRSTITEM and a bag of gold!"
+      }
     ],
     nameTemplate: "The Puzzle of $FIRSTLOCATION"
   },
   {
     type: "investigationQuest",
     steps: [
-      "$FIRSTNPC informs you of strange happenings in $FIRSTLOCATION.",
-      "You travel to $FIRSTLOCATION to investigate...",
-      "You gather clues and speak to $TARGET...",
-      "You piece together the mystery...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC informs you of strange happenings in $FIRSTLOCATION.", time: 10000 },
+      { text: "You travel to $FIRSTLOCATION to investigate...", time: 5000 },
+      [
+        { text: "You uncover an old journal with cryptic notes.", time: 5000, weight: 2, reward: ['xp:0.5', 'item:0.3'] }, // Clue + item chance
+        { text: "A shadowy figure watches you from afar.", time: 4000, weight: 1, reward: ['xp:0.5'] } // Suspense XP
+      ],
+      { text: "You gather clues and speak to $TARGET...", time: 5000, reward: ['xp:0.5'] }, // Investigation XP
+      { text: "You piece together the mystery...", time: 10000, reward: ['xp:0.8', 'stat:0.2'] }, // Deduction XP + stat
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
-		{
-			description: "You uncover the truth and reveal the culprit was $FIRSTNPC the whole time!",
-			rewards: ["xp:150"],
-			feedback: "Better luck next time."
-		},
-		{
-			description: "The mystery remains unsolved, leaving you puzzled.",
-			rewards: ["xp:50"],
-			feedback: "Better luck next time."
-		},
-		{
-			description: "The investigation leads to a dangerous confrontation with $FIRSTMONSTER.",
-			rewards: ["xp:150"],
-			feedback: "You managed to dispatch the beast and uncover $FIRSTITEM!"
-		}
+      {
+        description: "You uncover the truth and reveal the culprit was $FIRSTNPC the whole time!",
+        rewards: ["xp:150"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "The mystery remains unsolved, leaving you puzzled.",
+        rewards: ["xp:50"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "The investigation leads to a dangerous confrontation with $FIRSTMONSTER.",
+        rewards: ["xp:150"],
+        feedback: "You managed to dispatch the beast and uncover $FIRSTITEM!"
+      }
     ],
     nameTemplate: "Investigating $FIRSTLOCATION"
   },
   {
     type: "monsterHunt",
     steps: [
-      "$FIRSTNPC approaches you with tales of a terrifying $FIRSTMONSTER lurking in $FIRSTLOCATION.",
-      "You prepare your gear and set off to hunt the beast...",
-      "Upon reaching $FIRSTLOCATION, you track the $FIRSTMONSTER's trail...",
-      "You finally encounter the $FIRSTMONSTER in its lair...",
-      "An intense battle ensues...",
-      "$OUTCOME"
+      { text: "$FIRSTNPC approaches you with tales of a terrifying $FIRSTMONSTER lurking in $FIRSTLOCATION.", time: 10000 },
+      { text: "You prepare your gear and set off to hunt the beast...", time: 4000 },
+      { text: "Upon reaching $FIRSTLOCATION, you track the $FIRSTMONSTER's trail...", time: 4000, reward: ['xp:0.5'] }, // Tracking XP
+      [
+        { text: "You find signs of a previous hunter’s failure.", time: 4000, weight: 1, reward: ['xp:0.5'] }, // Effort XP
+        { text: "You spot the $FIRSTMONSTER from a distance.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Observation XP
+      ],
+      { text: "You finally encounter the $FIRSTMONSTER in its lair...", time: 4000 },
+      { text: "An intense battle ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "$OUTCOME", time: 5000 }
     ],
     outcomes: [
-		{
-			description: "You slay the $FIRSTMONSTER and claim its trophy.",
-			rewards: ["xp:150","item:$FIRSTITEM"],
-			feedback: "You gained a $FIRSTITEM!"
-		},
-		{
-			description: "The $FIRSTMONSTER escapes, leaving you to plot your next hunt.",
-			rewards: ["xp:75"],
-	        feedback: "Better luck next time."
-		},
-		{
-			description: "You are defeated by the $FIRSTMONSTER and barely escape with your life.",
-			rewards: ["xp:50"],
-			feedback: "You fought bravely but gained only experience."
-		}
+      {
+        description: "You slay the $FIRSTMONSTER and claim its trophy.",
+        rewards: ["xp:150", "item:$FIRSTITEM"],
+        feedback: "You gained a $FIRSTITEM!"
+      },
+      {
+        description: "The $FIRSTMONSTER escapes, leaving you to plot your next hunt.",
+        rewards: ["xp:75"],
+        feedback: "Better luck next time."
+      },
+      {
+        description: "You are defeated by the $FIRSTMONSTER and barely escape with your life.",
+        rewards: ["xp:50"],
+        feedback: "You fought bravely but gained only experience."
+      }
     ],
     nameTemplate: "The Hunt for the $FIRSTMONSTER in $FIRSTLOCATION"
   },
-{
-  type: "epicParody",
-  steps: [
-    "$FIRSTNPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
-    "You embark on a long journey with 9 companions, including your best friend $FRIEND...",
-    "You traverse the dangerous $FIRSTLOCATION, facing many perils...",
-    "You reach $TOWN, where you rest and gather supplies...",
-    "You continue your journey through the treacherous $SECONDLOCATION...",
-    "You encounter $FIRSTMONSTER, who tries to take the ring...",
-    "You narrowly escape and press on towards $MOUNT_DOOM...",
-	"$SECONDNPC, who has long sought the ring tracks you down...",
-	"You manage to subdue $SECONDNPC and convince them to guide you to $MOUNT_DOOM...",
-	"$SECONDNPC sows mistrust between you and your best friend $FRIEND...",
-	"Deceived by $SECONDNPC, you send $FRIEND away...",
-	"$SECONDNPC who now intends to kill you and take the ring, leads you to...",
-	"$THIRDLOCATION.  The lair of $SECONDMONSTER!  You're trapped!",
-	"You fight $SECONDMONSTER and managed to escape its lair...",
-	"... and are ambushed by $SECONDNPC!  A fight ensues...",
-	"In the scuffle $SECONDNPC is thrown off a cliff!  You venture on...",
-	"Just then, you are incapacitated by $SECONDMONSTER, and left for dead.",
-	"Meanwhile...  $FRIEND, who was heading back home from your betrayal finds...",
-	"The evidence of $SECONDNPC's treachery!",
-	"$FRIEND, enraged and with new determination manages to track you down and rescues you!",
-	"When you come to, you see $FRIEND and appologize.  \"It's over, It's lost!\" you say...",
-	"\"Begging your pardon, but it's not lost, I took it!  Only for safe keeping!\"",
-	"After a beat, $FRIEND gives you back the ring and you venture onward toward $MOUNT_DOOM...",
-    "You climb the steep steppes of $MOUNT_DOOM, battling exhaustion...",
-    "At the summit, you prepare to destroy the ring, but $SECONDNPC appears to stop you!",
-    "A dramatic confrontation ensues...",
-    "$OUTCOME"
-  ],
-  outcomes: [
-    {
-      description: "You cast the ring into the fire! It is destroyed forever!",
-      rewards: ["xp:1500"],
-      feedback: "You retire, comforted that the evil has been driven from the land... for now."
-    },
-    {
-      description: "$SECONDNPC steals the ring and escapes, leaving you in despair.",
-      rewards: ["xp:150"],
-      feedback: "Oh no! What will become of the world?"
-    },
-    {
-      description: "The ring slips from your grasp but falls into the fires accidentally!",
-      rewards: ["xp:1500"],
-      feedback: "The ring is gone—by luck or fate, the task is done."
-    }
-  ],
-  nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
-}
-
+  {
+    type: "epicParody",
+    steps: [
+      { text: "$FIRSTNPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.", time: 12000 }, // Epic intro
+      { text: "You embark on a long journey with 9 companions, including your best friend $FRIEND...", time: 4000 },
+      { text: "You traverse the dangerous $FIRSTLOCATION, facing many perils...", time: 6000, reward: ['xp:0.5'] }, // Peril XP
+      { text: "You reach $TOWN, where you rest and gather supplies...", time: 5000, reward: ['xp:1.0', 'item:0.5', 'equip:0.2', 'stat:0.1', '-gold:1.0'] }, // Rest + trade
+      { text: "You continue your journey through the treacherous $SECONDLOCATION...", time: 6000, reward: ['xp:0.5'] }, // Effort XP
+      { text: "You encounter $FIRSTMONSTER, who tries to take the ring...", time: 7500, reward: ['xp:0.8'] }, // Combat XP
+      { text: "You narrowly escape and press on towards $MOUNT_DOOM...", time: 4000, reward: ['xp:0.5'] }, // Escape XP
+      { text: "$SECONDNPC, who has long sought the ring, tracks you down...", time: 4000 },
+      { text: "You manage to subdue $SECONDNPC and convince them to guide you to $MOUNT_DOOM...", time: 4000, reward: ['xp:0.5'] }, // Persuasion XP
+      [
+        { text: "You find a hidden cache of supplies along the way.", time: 4000, weight: 1, reward: ['item:1.0'] }, // Item reward
+        { text: "$SECONDNPC secretly plots against you.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Suspense XP
+      ],
+      { text: "$SECONDNPC sows mistrust between you and your best friend $FRIEND...", time: 3000 },
+      { text: "Deceived by $SECONDNPC, you send $FRIEND away...", time: 6000 },
+      { text: "$SECONDNPC, who now intends to kill you and take the ring, leads you to...", time: 4000 },
+      { text: "$THIRDLOCATION. The lair of $SECONDMONSTER! You're trapped!", time: 8000 },
+      { text: "You fight $SECONDMONSTER and manage to escape its lair...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "...and are ambushed by $SECONDNPC! A fight ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "In the scuffle, $SECONDNPC is thrown off a cliff! You venture on...", time: 5000, reward: ['xp:0.5'] }, // Victory XP
+      { text: "Just then, you are incapacitated by $SECONDMONSTER, and left for dead.", time: 10000 },
+      { text: "Meanwhile... $FRIEND, who was heading back home from your betrayal, finds...", time: 5000 },
+      { text: "The evidence of $SECONDNPC's treachery!", time: 4000, reward: ['xp:0.3'] }, // Discovery XP
+      { text: "$FRIEND, enraged and with new determination, manages to track you down and rescues you!", time: 6000, reward: ['xp:0.5'] }, // Rescue XP
+      { text: "When you come to, you see $FRIEND and apologize. \"It's over, It's lost!\" you say...", time: 5000 },
+      { text: "\"Begging your pardon, but it's not lost, I took it! Only for safe keeping!\"", time: 5000 },
+      { text: "After a beat, $FRIEND gives you back the ring and you venture onward toward $MOUNT_DOOM...", time: 4000 },
+      { text: "You climb the steep steppes of $MOUNT_DOOM, battling exhaustion...", time: 8000, reward: ['xp:0.5'] }, // Effort XP
+      { text: "At the summit, you prepare to destroy the ring, but $SECONDNPC appears to stop you!", time: 6000 },
+      { text: "A dramatic confrontation ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
+      { text: "$OUTCOME", time: 7500 } // Epic conclusion
+    ],
+    outcomes: [
+      {
+        description: "You cast the ring into the fire! It is destroyed forever!",
+        rewards: ["xp:1500"],
+        feedback: "You retire, comforted that the evil has been driven from the land... for now."
+      },
+      {
+        description: "$SECONDNPC steals the ring and escapes, leaving you in despair.",
+        rewards: ["xp:150"],
+        feedback: "Oh no! What will become of the world?"
+      },
+      {
+        description: "The ring slips from your grasp but falls into the fires accidentally!",
+        rewards: ["xp:1500"],
+        feedback: "The ring is gone—by luck or fate, the task is done."
+      }
+    ],
+    nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
+  }
 ];

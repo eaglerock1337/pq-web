@@ -78,13 +78,32 @@ cheat("$$$", addScaledGold());
   
   cheat("RandomTask (for fun)", function () {
 	var result;
-	result = Random(2) === 0 ? (Random(2) === 0 ? randomTask() : randomTaskToo()) : (Random(2) === 0 ? diplomaticMission() : sideQuestStorySample());
+	result = Pick([
+		randomTask(),
+		randomTaskToo(),
+		diplomaticMission(),
+		sideQuestStorySample(),
+		generateSideQuest(),
+		wallyBfeed(getRandomInt(3,12))
+	]);
     console.log(result);
   });
   
   // New Side Quest button
   cheat("Side Quest", function () {
-    doSideQuest();
-    console.log("Side Quest queued: " + game.bestquest);
+	// Complete the current quest cleanly
+	if (game.task && game.task !== 'sideQuest') {
+		CompleteQuest(true); // Handles rewards, updates quest log, resets QuestBar
+	}
+
+	// Force current task completion and process it
+	if (!TaskBar.done()) {
+		TaskBar.reposition(TaskBar.Max()); // Finish current task
+		Dequeue(); // Process the completion immediately
+	}
+
+	// Start the side quest
+	doSideQuest();
+	console.log("Side Quest queued: " + game.bestquest);
   });
 }

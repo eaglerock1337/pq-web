@@ -219,83 +219,135 @@ function sideQuestStorySample() {
 }
 
 function doSideQuest() {
-    const sideQuest = generateSideQuest();
-    game.sideQuest = sideQuest;
+  const sideQuest = generateSideQuest();
+  game.sideQuest = sideQuest;
 
-    // Define addRandomness before using it
-    const addRandomness = (baseDelay) => RandomLow(baseDelay) + RandomHigh(baseDelay) / 2;
+  const addRandomness = (baseDelay) => RandomLow(baseDelay) + RandomHigh(baseDelay) / 2;
+  const totalTime = sideQuest.steps.reduce((sum, step) => sum + addRandomness(step.time || 5000), 0);
+  QuestBar.reset(totalTime, 0);
+  game.sideQuestCumulativeTime = 0;
 
-    // Calculate total time for all steps to set QuestBar maximum
-    const totalTime = sideQuest.steps.reduce((sum, step) => {
-        const delay = step.time || 5000; // Default to 5000ms if no time specified
-        return sum + addRandomness(delay);
-    }, 0);
-    QuestBar.reset(totalTime, 0); // Initialize QuestBar with total time as max
-    game.sideQuestCumulativeTime = 0; // Track cumulative progress
+  game.sideQuestSteps = sideQuest.steps.map((step, index) => {
+    const baseDelay = step.time || 5000;
+    const delay = addRandomness(baseDelay);
+    return () => {
+      Task(step.text, delay, () => {
+        if (step.reward) applyStepRewards(step.reward);
+        game.sideQuestCumulativeTime += delay;
+        QuestBar.reposition(game.sideQuestCumulativeTime);
+      });
+    };
+  });
 
-    const initialDelay = 5000;
-    const maxTotalDelay = 10000;
-    const ratio = totalTime > 1 ? Math.pow(maxTotalDelay / initialDelay, 1 / (totalTime - 1)) : 1;
-
-    game.sideQuestSteps = sideQuest.steps.map((step, index) => {
-        const baseDelay = step.time || (initialDelay * Math.pow(ratio, index));
-        const delay = addRandomness(baseDelay);
-        return () => {
-            Task(step.text, delay, () => {
-                // Apply step-specific rewards immediately
-                if (step.reward) {
-                    applyStepRewards(step.reward);
-                }
-                // Update QuestBar progress
-                game.sideQuestCumulativeTime += delay;
-                QuestBar.reposition(game.sideQuestCumulativeTime);
-            });
-        };
-    });
-
-    game.task = "sideQuest";
-    game.sideQuestOutcome = sideQuest.outcome;
-    game.sideQuestItem = sideQuest.rawData.item || "unknown item";
-
-    const caption = `Side Quest: ${sideQuest.name}`;
-    game.Quests.push(caption);
-    game.bestquest = caption;
-    Quests.AddUI(caption);
-    Log('Commencing quest: ' + caption);
+  game.task = "sideQuest";
+  game.sideQuestOutcome = sideQuest.outcome;
+  const caption = `Side Quest: ${sideQuest.name}`;
+  game.Quests.push(caption);
+  game.bestquest = caption;
+  Quests.AddUI(caption);
+  Log('Commencing quest: ' + caption);
 }
 
-function processSteps(stepTemplates) {
-  let result = [];
-  for (const stepTemplate of stepTemplates) {
-    if (Array.isArray(stepTemplate)) {
-      // Choice array: select one step based on weights
-      const totalWeight = stepTemplate.reduce((sum, step) => sum + (step.weight || 1), 0);
-      let rand = Random(totalWeight);
-      for (const step of stepTemplate) {
-        rand -= (step.weight || 1);
-        if (rand < 0) {
-          result.push(step);
-          break;
+function processSteps(template, questFlags = {}) {
+  if (template.type === "step") {
+    if (!template.chance || Math.random() < template.chance) {
+      const step = { ...template, isSequenceStep: true };
+      // Handle existing single-flag "flag" property
+      if (template.flag) {
+        questFlags[template.flag] = true;
+      }
+      // Handle new multi-flag "flags" property
+      if (template.flags) {
+        if (Array.isArray(template.flags)) {
+          template.flags.forEach(flag => {
+            questFlags[flag] = true;
+          });
+        } else {
+          questFlags[template.flags] = true; // Fallback for a single string under "flags"
         }
       }
-    } else if (stepTemplate.chance === undefined || Random(1) < stepTemplate.chance) {
-      // Single step: include if no chance specified or chance succeeds
-      result.push(stepTemplate);
+      return [step];
     }
+    return [];
+  } else if (template.type === "conditional") {
+    // Wrap the condition in a function and pass questFlags as flags
+    const conditionResult = typeof template.condition === "string" 
+      ? eval(`(flags) => ${template.condition}`)(questFlags) 
+      : false;
+    if (conditionResult) {
+      return processSteps(template.step, questFlags);
+    }
+    return [];
+  } else if (template.type === "sequence") {
+    let path = [];
+    for (const subStep of template.steps) {
+      const subPath = processSteps(subStep, questFlags);
+      path.push(...subPath);
+    }
+    return path;
+  } else if (template.type === "choice") {
+    const options = template.options;
+    const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0);
+    let rand = Math.random() * totalWeight;
+    for (const option of options) {
+      rand -= (option.weight || 1);
+      if (rand < 0) {
+        return processSteps(option, questFlags);
+      }
+    }
+    return processSteps(options[options.length - 1], questFlags);
+  } else if (template.type === "chance") {
+    if (Math.random() < template.probability) {
+      return processSteps(template.step, questFlags);
+    }
+    return [];
+  } else if (template.type === "repeat") {
+    let path = [];
+    const repeatCount = template.count || 1;
+    const texts = [template.step.text, ...(template.step.repeatText || [])];
+    for (let i = 0; i < repeatCount; i++) {
+      const stepText = texts[i % texts.length];
+      const repeatedStep = { ...template.step, text: stepText, isSequenceStep: true };
+      path.push(...processSteps(repeatedStep, questFlags));
+      if (i < repeatCount - 1 && Math.random() < 0.3) {
+        const randomStep = Pick(genericSteps);
+        path.push({ ...randomStep, isSequenceStep: false });
+      }
+    }
+    return path;
+  } else if (template.type === "conditional") {
+    const conditionResult = typeof template.condition === "string" ? eval(template.condition) : false;
+    if (conditionResult) {
+      return processSteps(template.step, questFlags);
+    }
+    return [];
   }
-  return result;
+  console.warn("Unknown step type:", template.type);
+  return [];
 }
 
 // Reward Parsing and Application Functions
 function parseRewards(rewardStrings) {
-    if (!rewardStrings) return [];
-    if (!Array.isArray(rewardStrings)) rewardStrings = [rewardStrings];
-    return rewardStrings.map(reward => {
-        const parts = reward.split(':');
-        const type = parts[0];
-        const probability = parts[1] ? parseFloat(parts[1]) : 1.0; // Use parseFloat for decimals
-        return { type, probability: isNaN(probability) ? 1.0 : probability }; // Default to 1.0 if NaN
-    });
+  if (!rewardStrings) return [];
+  if (!Array.isArray(rewardStrings)) rewardStrings = [rewardStrings];
+  return rewardStrings.map(reward => {
+    const parts = reward.split(':');
+    const type = parts[0];
+    const value = parts.slice(1).join(':'); // Rejoin parts in case the item name contains ':'
+    if (type === 'item') {
+      const probability = parseFloat(value);
+      if (!isNaN(probability) && probability >= 0 && probability <= 1) {
+        // Value is a valid probability
+        return { type: 'item_probability', probability };
+      } else {
+        // Value is a custom item name
+        return { type: 'item_named', itemName: value };
+      }
+    }
+    // Handle other reward types (e.g., xp, gold) as before
+    const probability = parseFloat(value) || 1.0;
+    return { type, probability };
+  });
 }
 
 function applyXpReward(probability) {
@@ -342,93 +394,167 @@ function applyGoldReward(probability, isNegative = false) {
     }
 }
 
+function applyNamedItemReward(itemName) {
+  Add(Inventory, itemName, 1);
+  console.log(`Gained ${itemName}`);
+}
+
 function applyStepRewards(rewardStrings) {
-	console.log("Applying step rewards:", rewardStrings);
-    const rewards = parseRewards(rewardStrings);
-    rewards.forEach(reward => {
-        const { type, probability } = reward;
-        console.log("Processing " + type + " with probability " + probability);
-        switch (type) {
-            case 'xp': applyXpReward(probability); break;
-            case 'item': applyItemReward(probability); break;
-            case 'equip': applyEquipReward(probability); break;
-            case 'stat': applyStatReward(probability); break;
-            case 'gold': applyGoldReward(probability); break;
-            case '-gold': applyGoldReward(probability, true); break;
-            default: console.warn(`Unknown reward type: ${type}`);
-        }
-    });
+  console.log("Applying step rewards:", rewardStrings);
+  const rewards = parseRewards(rewardStrings);
+  rewards.forEach(reward => {
+    const { type, probability, itemName } = reward;
+    console.log("Processing " + type + (itemName ? ` with item ${itemName}` : ` with probability ${probability}`));
+    switch (type) {
+      case 'xp':
+        applyXpReward(probability);
+        break;
+      case 'item_probability':
+        applyItemReward(probability); // Existing function for probability-based items
+        break;
+      case 'item_named':
+        applyNamedItemReward(itemName); // New function for named items
+        break;
+      case 'equip':
+        applyEquipReward(probability);
+        break;
+      case 'stat':
+        applyStatReward(probability);
+        break;
+      case 'gold':
+        applyGoldReward(probability);
+        break;
+      case '-gold':
+        applyGoldReward(probability, true);
+        break;
+      default:
+        console.warn(`Unknown reward type: ${type}`);
+    }
+  });
 }
 
 //---------
 //---------New Side Quest system
-function generateSideQuest() {
-    const template = Pick(sideQuestTemplates);
-    const subs = {
-        "$FIRSTNPC": coolName(),
-        "$SECONDNPC": GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark'])),
-        "$FIRSTITEM": coolItem(),
-        "$SECONDITEM": coolItem(),
-        "$FIRSTLOCATION": coolPlace(),
-        "$SECONDLOCATION": coolPlace(),
-        "$THIRDLOCATION": coolPlace(),
-        "$TOWN": GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false),
-        "$MOUNT_DOOM": GenerateLocationName(Pick([1, 2]), 'dark', false),
-        "$FIRSTMONSTER": NamedMonster(),
-        "$SECONDMONSTER": NamedMonster(),
-        "$TARGET": coolName(),
-        "$FRIEND": splitName(coolName())
-    };
+function generateSideQuest(questIndex = null, questType = null) {
+// If questIndex is provided, select the specific quest by index
+  if (questIndex !== null && typeof questIndex === 'number') {
+    if (questIndex >= 0 && questIndex < sideQuestTemplates.length) {
+      template = sideQuestTemplates[questIndex];
+    } else {
+      console.warn(`Invalid quest index: ${questIndex}. Falling back to random selection.`);
+      template = Pick(sideQuestTemplates);
+    }
+  }
+  // If questType is provided, select a random quest of that type
+  else if (questType !== null && typeof questType === 'string') {
+    const matchingTemplates = sideQuestTemplates.filter(t => t.type === questType);
+    if (matchingTemplates.length > 0) {
+      template = Pick(matchingTemplates);
+    } else {
+      console.warn(`No quests found for type: ${questType}. Falling back to random selection.`);
+      template = Pick(sideQuestTemplates);
+    }
+  }
+  // Default behavior: pick a random quest
+  else {
+    template = Pick(sideQuestTemplates);
+  }
+  
+  const subs = {
+    "$FIRSTNPC": coolName(),
+    "$SECONDNPC": GenerateNameNew(1, Pick(['elvish', 'dwarvish', 'dark'])),
+    "$FIRSTITEM": coolItem(),
+    "$SECONDITEM": coolItem(),
+    "$FIRSTLOCATION": coolPlace(),
+    "$SECONDLOCATION": coolPlace(),
+    "$THIRDLOCATION": coolPlace(),
+    "$TOWN": GenerateLocationName(1, Pick(['elvish', 'dwarvish', 'human']), false),
+    "$MOUNT_DOOM": GenerateLocationName(Pick([1, 2]), 'dark', false),
+    "$FIRSTMONSTER": NamedMonster(),
+    "$SECONDMONSTER": NamedMonster(),
+    "$TARGET": coolName(),
+    "$FRIEND": splitName(coolName())
+  };
 
-    const rawOutcome = Pick(template.outcomes);
-    const outcome = {
-        description: substituteString(rawOutcome.description, subs),
-        rewards: rawOutcome.rewards.map(reward => substituteString(reward, subs)),
-        feedback: substituteString(rawOutcome.feedback, subs)
-    };
+  // Substitute text in steps before processing
+	const substituteStepText = (step) => {
+	  if (step.type === "step") {
+		return { ...step, text: substituteString(step.text, subs) };
+	  } else if (step.type === "sequence") {
+		return { ...step, steps: step.steps ? step.steps.map(substituteStepText) : undefined };
+	  } else if (step.type === "choice") {
+		return { ...step, options: step.options.map(substituteStepText) };
+	  } else if (step.type === "repeat") {
+		return {
+		  ...step,
+		  step: step.step ? substituteStepText(step.step) : undefined,
+		  repeatText: step.repeatText ? step.repeatText.map(text => substituteString(text, subs)) : undefined
+		};
+	  } else if (step.type === "chance" || step.type === "conditional") {
+		return { ...step, step: step.step ? substituteStepText(step.step) : undefined };
+	  }
+	  return step;
+	};
+  
+  const substitutedTemplate = { ...template, steps: substituteStepText(template.steps) };
 
-    // Process main steps
-    const mainSteps = processSteps(template.steps);
+  const questFlags = {};
+  const steps = processSteps(substitutedTemplate.steps, questFlags);
 
-    // Insert generic random steps after the first two steps
-    const maxRandomSteps = 2; // Limit for balance
-    let randomStepsInserted = 0;
-    const finalSteps = [];
+  const possibleOutcomes = template.outcomes.filter(outcome => {
+    if (outcome.condition) {
+      return eval(outcome.condition)(questFlags);
+    }
+    return true;
+  });
+  const rawOutcome = possibleOutcomes.length > 0 ? Pick(possibleOutcomes) : Pick(template.outcomes);
+  const outcome = {
+    description: substituteString(rawOutcome.description, subs),
+    rewards: rawOutcome.rewards.map(reward => substituteString(reward, subs)),
+    feedback: substituteString(rawOutcome.feedback, subs)
+  };
 
-    mainSteps.forEach((step, index) => {
-        // Add the step first
-        finalSteps.push(step);
+  const maxRandomSteps = 2;
+  let randomStepsInserted = 0;
+  const finalSteps = [];
+  let lastStepWasSequence = false;
 
-        // Only insert random steps after the first two regular steps (index >= 2)
-        if (index >= 2 && randomStepsInserted < maxRandomSteps && Odds(20, 100)) { // 20% chance
-            const randomStep = Pick(genericSteps);
-            finalSteps.push(randomStep);
-            randomStepsInserted++;
-        }
-    });
+  steps.forEach((step, index) => {
+    finalSteps.push(step);
+    if (!step.isSequenceStep && !lastStepWasSequence && randomStepsInserted < maxRandomSteps && Odds(30, 100)) {
+      const randomStep = Pick(genericSteps);
+      finalSteps.push({ ...randomStep, isSequenceStep: false });
+      randomStepsInserted++;
+    }
+    lastStepWasSequence = step.isSequenceStep;
+  });
 
-    // Substitute text
-    const steps = finalSteps.map(step => ({
-        text: substituteString(step.text, subs, step.text.includes("$OUTCOME") ? outcome.description : null),
-        time: step.time,
-        reward: step.reward // Preserve reward property
-    }));
+  const substitutedSteps = finalSteps.map(step => ({
+    text: step.text.includes("$OUTCOME") ? outcome.description : step.text,
+    time: step.time,
+    reward: step.reward
+  }));
 
-    const questName = substituteString(template.nameTemplate, subs);
-
-    return {
-        name: questName,
-        steps,
-        outcome,
-        rawData: { subs }
-    };
+  return {
+    name: substituteString(template.nameTemplate, subs),
+    steps: substitutedSteps,
+    outcome,
+	questFlags,
+    rawData: { subs }
+  };
 }
 
-// Helper function to substitute placeholders
+// Helper function to escape RegEx special chars - because we switched from .replace() to RegEx for global support...
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Helper function to substitute placeholders -- now escaping RegEx special chars
 function substituteString(str, subs, outcomeReplacement) {
   let result = str;
   for (const [key, value] of Object.entries(subs)) {
-    result = result.replace(key, value);
+    const escapedKey = escapeRegExp(key);
+    result = result.replace(new RegExp(escapedKey, 'g'), value);
   }
   if (outcomeReplacement) {
     result = result.replace("$OUTCOME", outcomeReplacement);
@@ -762,27 +888,23 @@ function Put(list, key, value) {
 
 function ProgressBar(id, tmpl) {
   this.id = id;
-  this.bar = $("#"+ id + " > .bar");
+  this.bar = $("#" + id + " > .bar");
   this.tmpl = tmpl;
-
-  this.Max = function () { return game[this.id].max; };
-  this.Position = function () { return game[this.id].position; };
-
-  this.reset = function (newmax, newposition) {
-    game[this.id].max = newmax;
-    this.reposition(newposition || 0);
-  };
+  this._template = window.template; // Capture the global template function
 
   this.reposition = function (newpos) {
     game[this.id].position = Min(newpos, this.Max());
-
-    // Recompute hint
-    game[this.id].percent = (100 * this.Position()).div(this.Max());
+    game[this.id].percent = (100 * this.Position()) / this.Max();
     game[this.id].remaining = Math.floor(this.Max() - this.Position());
     game[this.id].time = RoughTime(this.Max() - this.Position());
-    game[this.id].hint = template(this.tmpl, game[this.id]);
 
-    // Update UI
+    if (typeof this._template === 'function') {
+      game[this.id].hint = this._template(this.tmpl, game[this.id]);
+    } else {
+      console.error('Captured template is not a function at time of call. Falling back to tmpl string.');
+      game[this.id].hint = this.tmpl;
+    }
+
     if (this.bar) {
       var p = this.Max() ? 100 * this.Position() / this.Max() : 0;
       this.bar.css("width", p + "%");
@@ -790,14 +912,19 @@ function ProgressBar(id, tmpl) {
     }
   };
 
+  this.Max = function () { return game[this.id].max; };
+  this.Position = function () { return game[this.id].position; };
+  this.reset = function (newmax, newpos) {
+    game[this.id] = game[this.id] || {};
+    game[this.id].max = newmax;
+    this.reposition(newpos || 0);
+  };
   this.increment = function (inc) {
     this.reposition(this.Position() + inc);
   };
-
   this.done = function () {
     return this.Position() >= this.Max();
   };
-
   this.load = function (game) {
     this.reposition(this.Position());
   };
@@ -1196,7 +1323,7 @@ function CompleteQuest(skipNew = false) {
             () => generateItemQuest('Purchase', BoringItem, Random(100) + 1),
             () => Random(2) === 0 ? randomTask() : randomTaskToo(),
             () => diplomaticMission(),
-            () => { doSideQuest(); } // No caption here, doSideQuest handles it
+            () => { doSideQuest(); }
         ];
         const caption = questGenerators[Random(questGenerators.length)]();
         if (!game.Quests) game.Quests = [];

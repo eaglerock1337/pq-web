@@ -66,7 +66,7 @@ function Cheats() {
     WinStat();
   });
 
-cheat("$$$", addScaledGold());
+cheat("$$$", addScaledGold);
 
 
   cheat("Save", function () {

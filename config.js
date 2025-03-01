@@ -1855,6 +1855,7 @@ K.Spells = [
   "Sharp Tongue",
   "Lockjaw",
   "History Lesson",
+  "Displacement",
   "Release from Quarantine",
   "Hydrophobia",
   "Big Sister",
@@ -2852,276 +2853,1513 @@ const genericSteps = [
 //---
 const sideQuestTemplates = [
   {
+    type: "villageRescue",
+    nameTemplate: "The Cursed Secrets of $TOWN",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC, a panicked villager, begs you to investigate strange events in $TOWN.",
+          time: 10000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You travel to $TOWN under cover of night.",
+              time: 5000,
+              weight: 2
+            },
+            {
+              type: "sequence",
+              steps: [
+                {
+                  type: "step",
+                  text: "You take the main road, but $FIRSTMONSTER blocks your path.",
+                  time: 6000
+                },
+                {
+                  type: "choice",
+                  options: [
+                    {
+                      type: "step",
+                      text: "You bribe $FIRSTMONSTER with gold to pass.",
+                      time: 4000,
+                      reward: ['-gold:1.0', 'xp:0.5']
+                    },
+                    {
+                      type: "sequence",
+                      steps: [
+                        {
+                          type: "step",
+                          text: "$FIRSTMONSTER Attacks!",
+                          time: 8000
+                        },
+                        {
+                          type: "choice",
+                          options: [
+                            {
+                              type: "step",
+                              text: "Victory! You defeat $FIRSTMONSTER and continue onward.",
+                              time: 6000,
+                              reward: ['xp:1.0', 'item:0.7']
+                            },
+                            {
+                              type: "step",
+                              text: "Defeat! You retreat, wounded.",
+                              time: 7000,
+                              reward: ['xp:0.5']
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              weight: 1
+            }
+          ]
+        },
+        {
+          type: "repeat",
+          count: 2,
+          step: {
+            type: "step",
+            text: "You search $TOWN for clues about the curse.",
+            repeatText: ["You continue to search for clues.", "You keep looking around $TOWN."],
+            time: 3000,
+            reward: ['xp:0.3']
+          }
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your experience reveals a hidden ritual site in $TOWN.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You examine the site and uncover cryptic runes.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You interrogate one of the locals, $SECONDNPC, who hints at a curse.",
+          time: 5000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You decide to leave the mystery unsolved for now.",
+              time: 3000
+            },
+            {
+              type: "sequence",
+              steps: [
+                {
+                  type: "step",
+                  text: "You search an abandoned house and trigger a trap!",
+                  time: 7000
+                },
+                {
+                  type: "choice",
+                  options: [
+                    {
+                      type: "step",
+                      text: "The trap injures you, but you press on.",
+                      time: 6000,
+                      reward: ['xp:0.5']
+                    },
+                    {
+                      type: "sequence",
+                      steps: [
+                        {
+                          type: "step",
+                          text: "$SECONDMONSTER bursts from the shadows!",
+                          time: 8000
+                        },
+                        {
+                          type: "sequence",
+                          steps: [
+                            {
+                              type: "step",
+                              text: "You engage $SECONDMONSTER in a fierce battle!",
+                              time: 7000
+                            },
+                            {
+                              type: "choice",
+                              options: [
+                                {
+                                  type: "step",
+                                  text: "You subdue $SECONDMONSTER and recover $SECONDITEM and it transforms into $SECONDNPC before your eyes!",
+                                  time: 6000,
+                                  reward: ['xp:1.0', 'item:$SECONDITEM'],
+                                  flag: "monsterSubdued"
+                                },
+                                {
+                                  type: "step",
+                                  text: "$SECONDMONSTER drives you out, leaving $SECONDITEM behind.",
+                                  time: 6000,
+                                  reward: ['xp:0.5']
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 10000
+        }
+      ]
+    },
+    outcomes: [
+      {
+        description: "You banish $SECONDMONSTER, lifting the curse.",
+        condition: "(flags) => flags.monsterSubdued === true",
+        rewards: ["xp:400"],
+        feedback: "Victory! The village sings your praises."
+      },
+      {
+        description: "The curse consumes $TOWN, and you flee.",
+        condition: "(flags) => flags.monsterSubdued !== true",
+        rewards: ["xp:100"],
+        feedback: "A grim lesson in failure."
+      },
+      {
+        description: "You break the curse, revealing $FIRSTNPC as the culprit!",
+        condition: "(flags) => flags.monsterSubdued === undefined",
+        rewards: ["xp:250", "gold:scaled"],
+        feedback: "The village is saved, and $FIRSTNPC is brought to justice."
+      }
+    ]
+  },
+  {
     type: "treasureHunt",
-    steps: [
-      { text: "You are approached by $FIRSTNPC, who speaks of treasure hidden in $FIRSTLOCATION.", time: 10000 }, // Long initial read
-      { text: '"You seek the $FIRSTITEM..." they whisper.', time: 5000 },
-      { text: "You set out on your journey...", time: 4000 },
-      [
-        { text: "You meet a merchant who offers a map to aid your quest.", time: 4000, weight: 2, reward: ['gold:0.5', '-gold:0.5'] }, // Trade chance
-        { text: "You are ambushed by bandits en route!", time: 5000, weight: 1, reward: ['xp:1.0'] }, // Combat XP
-        { text: "You stumble upon a hidden shortcut.", time: 3000, weight: 1, reward: ['xp:0.3'] } // Small XP for efficiency
-      ],
-      { text: "You arrive and discover...", time: 3000 },
-      { text: "$OUTCOME", time: 7500 }
-    ],
+    nameTemplate: "The Search for $FIRSTITEM in $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "You are approached by $FIRSTNPC, who speaks of treasure hidden in $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: '"You seek the $FIRSTITEM..." they whisper.',
+          time: 5000
+        },
+        {
+          type: "step",
+          text: "You set out on your journey...",
+          time: 4000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You meet a merchant who offers a map to aid your quest.",
+              time: 4000,
+              weight: 2,
+              reward: ['gold:0.5', '-gold:0.5']
+            },
+            {
+              type: "step",
+              text: "You are ambushed by bandits en route!",
+              time: 5000,
+              weight: 1,
+              reward: ['xp:1.0']
+            },
+            {
+              type: "step",
+              text: "You stumble upon a hidden shortcut.",
+              time: 3000,
+              weight: 1,
+              reward: ['xp:0.3']
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your seasoned instincts reveal a concealed path to $FIRSTLOCATION.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You decipher an old marker, hastening your search.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You arrive and discover...",
+          time: 3000
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 7500
+        }
+      ]
+    },
     outcomes: [
       {
         description: "...nothing but dust. You return empty-handed.",
+        condition: "(flags) => flags.treasureFound !== true",
         rewards: ["xp:50"],
         feedback: "Better luck next time."
       },
       {
         description: "...a chest! You claim the $FIRSTITEM.",
+        condition: "(flags) => flags.treasureFound === true",
         rewards: ["item:$FIRSTITEM", "xp:100"],
-        feedback: "You gained a $FIRSTITEM!"
+        feedback: "You gained a $FIRSTITEM!",
+        flag: "treasureFound"
       },
       {
         description: "...an ambush! $FIRSTMONSTER attacks!",
+        condition: "(flags) => flags.monsterAmbush === true",
         rewards: ["xp:100"],
-        feedback: "You fought bravely but gained only experience."
+        feedback: "You fought bravely but gained only experience.",
+        flag: "monsterAmbush"
       }
-    ],
-    nameTemplate: "The Search for $FIRSTITEM in $FIRSTLOCATION"
+    ]
   },
   {
     type: "rescueMission",
-    steps: [
-      { text: "$FIRSTNPC begs you to rescue $TARGET from $FIRSTLOCATION.", time: 10000 },
-      { text: "You gear up for the perilous journey...", time: 4000 },
-      [
-        { text: "You encounter a storm that slows your progress.", time: 8000, weight: 1, reward: ['xp:0.5'] }, // Effort XP
-        { text: "A friendly traveler shares rumors of $FIRSTLOCATION.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Info XP
-      ],
-      { text: "You find $TARGET cornered by $FIRSTMONSTER.", time: 5000 },
-      { text: "A fight ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "The Rescue of $TARGET from $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC begs you to rescue $TARGET from $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "You gear up for the perilous journey...",
+          time: 4000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You encounter a storm that slows your progress.",
+              time: 8000,
+              weight: 1,
+              reward: ['xp:0.5']
+            },
+            {
+              type: "step",
+              text: "A friendly traveler shares rumors of $FIRSTLOCATION.",
+              time: 4000,
+              weight: 2,
+              reward: ['xp:0.3']
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your experience helps you navigate a treacherous shortcuts to $FIRSTLOCATION.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You avoid a deadly hazard thanks to your keen senses.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You find $TARGET cornered by $FIRSTMONSTER.",
+          time: 5000
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "A fight ensues...",
+              time: 10000,
+              reward: ['xp:1.0']
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You defeat $FIRSTMONSTER and free $TARGET.",
+                  time: 6000,
+                  reward: ['xp:0.5'],
+                  flag: "targetRescued"
+                },
+                {
+                  type: "step",
+                  text: "You are overpowered and fail to rescue $TARGET.",
+                  time: 6000,
+                  reward: ['xp:0.5']
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You save $TARGET and return as a hero.",
+        condition: "(flags) => flags.targetRescued === true",
         rewards: ["xp:100", "gold:50"],
         feedback: "The townsfolk cheer your name! You earned 50 gold."
       },
       {
         description: "The enemy overpowers you, and you flee.",
+        condition: "(flags) => flags.targetRescued !== true",
         rewards: ["xp:50"],
         feedback: "You retreat, wiser but bruised."
       },
       {
         description: "$TARGET escapes on their own, thanking you anyway.",
+        condition: "(flags) => flags.targetRescued === undefined",
         rewards: ["xp:75"],
         feedback: "$TARGET thanks you with a nod and a smile."
       }
-    ],
-    nameTemplate: "The Rescue of $TARGET from $FIRSTLOCATION"
+    ]
   },
   {
     type: "escortMission",
-    steps: [
-      { text: "$FIRSTNPC asks you to escort them safely to $FIRSTLOCATION.", time: 10000 },
-      { text: "You prepare for the journey...", time: 4000 },
-      { text: "Along the way, you encounter $FIRSTMONSTER.", time: 4000, chance: 0.9, reward: ['xp:0.8'] }, // Combat XP chance
-      { text: "A confrontation ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "Escort $FIRSTNPC to $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC asks you to escort them safely to $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "You prepare for the journey...",
+          time: 4000
+        },
+        {
+          type: "chance",
+          probability: 0.9,
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Along the way, you encounter $FIRSTMONSTER.",
+                time: 4000,
+                reward: ['xp:0.8']
+              },
+              {
+                type: "choice",
+                options: [
+                  {
+                    type: "step",
+                    text: "You fend off $FIRSTMONSTER successfully.",
+                    time: 10000,
+                    reward: ['xp:1.0'],
+                    flag: "escortSafe"
+                  },
+                  {
+                    type: "step",
+                    text: "$FIRSTMONSTER drives you back.",
+                    time: 10000,
+                    reward: ['xp:0.5']
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your experience warns you of an ambush ahead.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You guide $FIRSTNPC safely around the danger.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You safely escort $FIRSTNPC to $FIRSTLOCATION.",
+        condition: "(flags) => flags.escortSafe === true",
         rewards: ["xp:100", "gold:scaled"],
         feedback: "$FIRSTNPC thanks you and you receive some gold!"
       },
       {
         description: "The journey proves too dangerous, and $FIRSTNPC retreats.",
+        condition: "(flags) => flags.escortSafe === undefined",
         rewards: ["xp:100"],
         feedback: "You fought bravely but gained only experience."
       },
       {
         description: "$FIRSTMONSTER overwhelms you, and $FIRSTNPC is lost.",
+        condition: "(flags) => flags.escortSafe !== true",
         rewards: ["xp:50"],
         feedback: "You fought bravely but gained only experience."
       }
-    ],
-    nameTemplate: "Escort $FIRSTNPC to $FIRSTLOCATION"
+    ]
   },
   {
     type: "gatheringQuest",
-    steps: [
-      { text: "$FIRSTNPC requests rare $FIRSTITEM from $FIRSTLOCATION.", time: 10000 },
-      { text: "You begin your search...", time: 4000 },
-      [
-        { text: "You spot a rival adventurer also seeking the $FIRSTITEM.", time: 4000, weight: 1, reward: ['xp:0.5'] }, // Competition XP
-        { text: "You find clues leading to the $FIRSTITEM’s location.", time: 5000, weight: 2, reward: ['xp:0.3'] } // Clue XP
-      ],
-      { text: "You find the $FIRSTITEM but it's guarded by $FIRSTMONSTER.", time: 4000 },
-      { text: "A battle occurs...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "Gathering $FIRSTITEM from $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC requests rare $FIRSTITEM from $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "You begin your search...",
+          time: 4000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You spot a rival adventurer also seeking the $FIRSTITEM.",
+              time: 4000,
+              weight: 1,
+              reward: ['xp:0.5']
+            },
+            {
+              type: "step",
+              text: "You find clues leading to the $FIRSTITEM’s location.",
+              time: 5000,
+              weight: 2,
+              reward: ['xp:0.3']
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your expertise uncovers a quicker path to the $FIRSTITEM.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You spot rare traces confirming its presence.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "You find the $FIRSTITEM but it's guarded by $FIRSTMONSTER.",
+              time: 4000
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You defeat $FIRSTMONSTER and secure the $FIRSTITEM.",
+                  time: 10000,
+                  reward: ['xp:1.0', 'item:$FIRSTITEM'],
+                  flag: "itemGathered"
+                },
+                {
+                  type: "step",
+                  text: "You fail to defeat $FIRSTMONSTER and retreat.",
+                  time: 10000,
+                  reward: ['xp:0.5']
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You retrieve the $FIRSTITEM and return it to $FIRSTNPC, who pays handsomely for your efforts!",
+        condition: "(flags) => flags.itemGathered === true",
         rewards: ["xp:150", "gold:scaled"],
         feedback: "Take it! I don't need it!"
       },
       {
         description: "The $FIRSTITEM is destroyed in the scuffle.",
+        condition: "(flags) => flags.itemGathered !== true",
         rewards: ["xp:150"],
         feedback: "Better luck next time."
       },
       {
         description: "You are unable to defeat the $FIRSTMONSTER and retreat.",
+        condition: "(flags) => flags.itemGathered === undefined",
         rewards: ["xp:50"],
         feedback: "Better luck next time."
       }
-    ],
-    nameTemplate: "Gathering $FIRSTITEM from $FIRSTLOCATION"
+    ]
   },
   {
     type: "puzzleChallenge",
-    steps: [
-      { text: "$FIRSTNPC challenges you to solve the puzzle at $FIRSTLOCATION.", time: 10000 },
-      { text: "\"Challenge accepted!\" you say...", time: 3000 },
-      { text: "You arrive at the puzzle site...", time: 5000 },
-      { text: "The puzzle is more complex than it seems...", time: 4000, chance: 0.7, reward: ['xp:0.5'] }, // Effort XP
-      { text: "You use your wit and skills...", time: 6000, reward: ['xp:0.8', 'stat:0.2'] }, // Thinking XP + stat chance
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "The Puzzle of $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC challenges you to solve the puzzle at $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: '"Challenge accepted!" you say...',
+          time: 3000
+        },
+        {
+          type: "step",
+          text: "You arrive at the puzzle site...",
+          time: 5000
+        },
+        {
+          type: "chance",
+          probability: 0.7,
+          step: {
+            type: "step",
+            text: "The puzzle is more complex than it seems...",
+            time: 4000,
+            reward: ['xp:0.5']
+          }
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your experience spots a subtle clue in the puzzle’s design.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You use this insight to bypass a tricky section.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You use your wit and skills...",
+          time: 6000,
+          reward: ['xp:0.8', 'stat:0.2']
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You solve the puzzle and reveal a hidden treasure!",
+        condition: "(flags) => flags.puzzleSolved === true",
         rewards: ["xp:150", "item:$FIRSTITEM"],
-        feedback: "You gained a $FIRSTITEM!"
+        feedback: "You gained a $FIRSTITEM!",
+        flag: "puzzleSolved"
       },
       {
         description: "The puzzle proves too difficult, and you give up.",
+        condition: "(flags) => flags.puzzleSolved === undefined",
         rewards: ["xp:50"],
         feedback: "Better luck next time."
       },
       {
         description: "Solving the puzzle triggers a trap, and $FIRSTMONSTER appears.",
+        condition: "(flags) => flags.monsterTriggered === true",
         rewards: ["xp:150", "item:$FIRSTITEM", "gold:scaled"],
-        feedback: "Victory! You have obtained $FIRSTITEM and a bag of gold!"
+        feedback: "Victory! You have obtained $FIRSTITEM and a bag of gold!",
+        flag: "monsterTriggered"
       }
-    ],
-    nameTemplate: "The Puzzle of $FIRSTLOCATION"
+    ]
   },
   {
     type: "investigationQuest",
-    steps: [
-      { text: "$FIRSTNPC informs you of strange happenings in $FIRSTLOCATION.", time: 10000 },
-      { text: "You travel to $FIRSTLOCATION to investigate...", time: 5000 },
-      [
-        { text: "You uncover an old journal with cryptic notes.", time: 5000, weight: 2, reward: ['xp:0.5', 'item:0.3'] }, // Clue + item chance
-        { text: "A shadowy figure watches you from afar.", time: 4000, weight: 1, reward: ['xp:0.5'] } // Suspense XP
-      ],
-      { text: "You gather clues and speak to $TARGET...", time: 5000, reward: ['xp:0.5'] }, // Investigation XP
-      { text: "You piece together the mystery...", time: 10000, reward: ['xp:0.8', 'stat:0.2'] }, // Deduction XP + stat
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "Investigating $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC informs you of strange happenings in $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "You travel to $FIRSTLOCATION to investigate...",
+          time: 5000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You uncover an old journal with cryptic notes.",
+              time: 5000,
+              weight: 2,
+              reward: ['xp:0.5', 'item:0.3']
+            },
+            {
+              type: "step",
+              text: "A shadowy figure watches you from afar.",
+              time: 4000,
+              weight: 1,
+              reward: ['xp:0.5']
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your keen mind deciphers a hidden message in $FIRSTLOCATION.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "This revelation speeds your investigation.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You gather clues and speak to $TARGET...",
+          time: 5000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "You piece together the mystery...",
+          time: 10000,
+          reward: ['xp:0.8', 'stat:0.2']
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You uncover the truth and reveal the culprit was $FIRSTNPC the whole time!",
+        condition: "(flags) => flags.culpritRevealed === true",
         rewards: ["xp:150"],
-        feedback: "Better luck next time."
+        feedback: "Better luck next time.",
+        flag: "culpritRevealed"
       },
       {
         description: "The mystery remains unsolved, leaving you puzzled.",
+        condition: "(flags) => flags.culpritRevealed === undefined",
         rewards: ["xp:50"],
         feedback: "Better luck next time."
       },
       {
         description: "The investigation leads to a dangerous confrontation with $FIRSTMONSTER.",
+        condition: "(flags) => flags.monsterEncounter === true",
         rewards: ["xp:150"],
-        feedback: "You managed to dispatch the beast and uncover $FIRSTITEM!"
+        feedback: "You managed to dispatch the beast and uncover $FIRSTITEM!",
+        flag: "monsterEncounter"
       }
-    ],
-    nameTemplate: "Investigating $FIRSTLOCATION"
+    ]
   },
   {
     type: "monsterHunt",
-    steps: [
-      { text: "$FIRSTNPC approaches you with tales of a terrifying $FIRSTMONSTER lurking in $FIRSTLOCATION.", time: 10000 },
-      { text: "You prepare your gear and set off to hunt the beast...", time: 4000 },
-      { text: "Upon reaching $FIRSTLOCATION, you track the $FIRSTMONSTER's trail...", time: 4000, reward: ['xp:0.5'] }, // Tracking XP
-      [
-        { text: "You find signs of a previous hunter’s failure.", time: 4000, weight: 1, reward: ['xp:0.5'] }, // Effort XP
-        { text: "You spot the $FIRSTMONSTER from a distance.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Observation XP
-      ],
-      { text: "You finally encounter the $FIRSTMONSTER in its lair...", time: 4000 },
-      { text: "An intense battle ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "$OUTCOME", time: 5000 }
-    ],
+    nameTemplate: "The Hunt for the $FIRSTMONSTER in $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC approaches you with tales of a terrifying $FIRSTMONSTER lurking in $FIRSTLOCATION.",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "You prepare your gear and set off to hunt the beast...",
+          time: 4000
+        },
+        {
+          type: "step",
+          text: "Upon reaching $FIRSTLOCATION, you track the $FIRSTMONSTER's trail...",
+          time: 4000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You find signs of a previous hunter’s failure.",
+              time: 4000,
+              weight: 1,
+              reward: ['xp:0.5']
+            },
+            {
+              type: "step",
+              text: "You spot the $FIRSTMONSTER from a distance.",
+              time: 4000,
+              weight: 2,
+              reward: ['xp:0.3']
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your hunting experience reveals a fresh trail of $FIRSTMONSTER.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You set a clever trap to weaken the beast.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "You finally encounter the $FIRSTMONSTER in its lair...",
+              time: 4000
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You slay the $FIRSTMONSTER and claim its trophy.",
+                  time: 10000,
+                  reward: ['xp:1.0', 'item:$FIRSTITEM'],
+                  flag: "monsterSlain"
+                },
+                {
+                  type: "step",
+                  text: "The $FIRSTMONSTER escapes your grasp.",
+                  time: 10000,
+                  reward: ['xp:0.5']
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 5000
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You slay the $FIRSTMONSTER and claim its trophy.",
+        condition: "(flags) => flags.monsterSlain === true",
         rewards: ["xp:150", "item:$FIRSTITEM"],
         feedback: "You gained a $FIRSTITEM!"
       },
       {
         description: "The $FIRSTMONSTER escapes, leaving you to plot your next hunt.",
+        condition: "(flags) => flags.monsterSlain === undefined",
         rewards: ["xp:75"],
         feedback: "Better luck next time."
       },
       {
         description: "You are defeated by the $FIRSTMONSTER and barely escape with your life.",
+        condition: "(flags) => flags.monsterSlain !== true",
         rewards: ["xp:50"],
         feedback: "You fought bravely but gained only experience."
       }
-    ],
-    nameTemplate: "The Hunt for the $FIRSTMONSTER in $FIRSTLOCATION"
+    ]
   },
   {
     type: "epicParody",
-    steps: [
-      { text: "$FIRSTNPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.", time: 12000 }, // Epic intro
-      { text: "You embark on a long journey with 9 companions, including your best friend $FRIEND...", time: 4000 },
-      { text: "You traverse the dangerous $FIRSTLOCATION, facing many perils...", time: 6000, reward: ['xp:0.5'] }, // Peril XP
-      { text: "You reach $TOWN, where you rest and gather supplies...", time: 5000, reward: ['xp:1.0', 'item:0.5', 'equip:0.2', 'stat:0.1', '-gold:1.0'] }, // Rest + trade
-      { text: "You continue your journey through the treacherous $SECONDLOCATION...", time: 6000, reward: ['xp:0.5'] }, // Effort XP
-      { text: "You encounter $FIRSTMONSTER, who tries to take the ring...", time: 7500, reward: ['xp:0.8'] }, // Combat XP
-      { text: "You narrowly escape and press on towards $MOUNT_DOOM...", time: 4000, reward: ['xp:0.5'] }, // Escape XP
-      { text: "$SECONDNPC, who has long sought the ring, tracks you down...", time: 4000 },
-      { text: "You manage to subdue $SECONDNPC and convince them to guide you to $MOUNT_DOOM...", time: 4000, reward: ['xp:0.5'] }, // Persuasion XP
-      [
-        { text: "You find a hidden cache of supplies along the way.", time: 4000, weight: 1, reward: ['item:1.0'] }, // Item reward
-        { text: "$SECONDNPC secretly plots against you.", time: 4000, weight: 2, reward: ['xp:0.3'] } // Suspense XP
-      ],
-      { text: "$SECONDNPC sows mistrust between you and your best friend $FRIEND...", time: 3000 },
-      { text: "Deceived by $SECONDNPC, you send $FRIEND away...", time: 6000 },
-      { text: "$SECONDNPC, who now intends to kill you and take the ring, leads you to...", time: 4000 },
-      { text: "$THIRDLOCATION. The lair of $SECONDMONSTER! You're trapped!", time: 8000 },
-      { text: "You fight $SECONDMONSTER and manage to escape its lair...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "...and are ambushed by $SECONDNPC! A fight ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "In the scuffle, $SECONDNPC is thrown off a cliff! You venture on...", time: 5000, reward: ['xp:0.5'] }, // Victory XP
-      { text: "Just then, you are incapacitated by $SECONDMONSTER, and left for dead.", time: 10000 },
-      { text: "Meanwhile... $FRIEND, who was heading back home from your betrayal, finds...", time: 5000 },
-      { text: "The evidence of $SECONDNPC's treachery!", time: 4000, reward: ['xp:0.3'] }, // Discovery XP
-      { text: "$FRIEND, enraged and with new determination, manages to track you down and rescues you!", time: 6000, reward: ['xp:0.5'] }, // Rescue XP
-      { text: "When you come to, you see $FRIEND and apologize. \"It's over, It's lost!\" you say...", time: 5000 },
-      { text: "\"Begging your pardon, but it's not lost, I took it! Only for safe keeping!\"", time: 5000 },
-      { text: "After a beat, $FRIEND gives you back the ring and you venture onward toward $MOUNT_DOOM...", time: 4000 },
-      { text: "You climb the steep steppes of $MOUNT_DOOM, battling exhaustion...", time: 8000, reward: ['xp:0.5'] }, // Effort XP
-      { text: "At the summit, you prepare to destroy the ring, but $SECONDNPC appears to stop you!", time: 6000 },
-      { text: "A dramatic confrontation ensues...", time: 10000, reward: ['xp:1.0'] }, // Combat XP
-      { text: "$OUTCOME", time: 7500 } // Epic conclusion
-    ],
+    nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC entrusts you with an ancient ring that must be destroyed in the fires of $MOUNT_DOOM.",
+          time: 12000
+        },
+        {
+          type: "step",
+          text: "You embark on a long journey with 9 companions, including your best friend $FRIEND...",
+          time: 4000
+        },
+        {
+          type: "step",
+          text: "You traverse the dangerous $FIRSTLOCATION, facing many perils...",
+          time: 6000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "You reach $TOWN, where you rest and gather supplies...",
+          time: 5000,
+          reward: ['xp:1.0', 'item:0.5', 'equip:0.2', 'stat:0.1', '-gold:1.0']
+        },
+        {
+          type: "step",
+          text: "You continue your journey through the treacherous $SECONDLOCATION...",
+          time: 6000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "You encounter $FIRSTMONSTER, who tries to take the ring...",
+              time: 7500,
+              reward: ['xp:0.8']
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You hide from $FIRSTMONSTER, wait for it to depart...",
+                  time: 6000,
+                },
+                {
+                  type: "step",
+                  text: "$FIRSTMONSTER, nearly captures you but your companions come to the rescue!",
+                  time: 6000,
+                  reward: ['xp:0.5']
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "You narrowly escape and press on towards $MOUNT_DOOM...",
+          time: 4000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "$SECONDNPC, who has long sought the ring, tracks you down...",
+          time: 4000
+        },
+        {
+          type: "step",
+          text: "You manage to subdue $SECONDNPC and convince them to guide you to $MOUNT_DOOM...",
+          time: 4000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "You find a hidden cache of supplies along the way.",
+              time: 4000,
+              weight: 1,
+              reward: ['item:1.0']
+            },
+            {
+              type: "step",
+              text: "$SECONDNPC secretly plots against you.",
+              time: 4000,
+              weight: 2,
+              reward: ['xp:0.3']
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$SECONDNPC sows mistrust between you and your best friend $FRIEND...",
+          time: 3000
+        },
+        {
+          type: "step",
+          text: "Deceived by $SECONDNPC, you send $FRIEND away...",
+          time: 6000
+        },
+        {
+          type: "step",
+          text: "$SECONDNPC, who now intends to kill you and take the ring, leads you to...",
+          time: 4000
+        },
+        {
+          type: "step",
+          text: "$THIRDLOCATION. The lair of $SECONDMONSTER! You're trapped!",
+          time: 8000
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "You fight $SECONDMONSTER and manage to escape its lair...",
+              time: 10000,
+              reward: ['xp:1.0']
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You defeat $SECONDMONSTER and continue.",
+                  time: 6000,
+                  reward: ['xp:0.5']
+                },
+                {
+                  type: "step",
+                  text: "$SECONDMONSTER wounds you but flees.",
+                  time: 6000,
+                  reward: ['xp:0.5']
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "...and are ambushed by $SECONDNPC! A fight ensues...",
+          time: 10000,
+          reward: ['xp:1.0']
+        },
+        {
+          type: "step",
+          text: "In the scuffle, $SECONDNPC is thrown off a cliff! You venture on...",
+          time: 5000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "Just then out of nowhere, $SECONDMONSTER returns and attacks you again! You are completely incapacitated, and left for dead!",
+          time: 10000
+        },
+        {
+          type: "step",
+          text: "Meanwhile... $FRIEND, who was heading back home from your betrayal, finds...",
+          time: 5000
+        },
+        {
+          type: "step",
+          text: "The evidence of $SECONDNPC's treachery!",
+          time: 4000,
+          reward: ['xp:0.3']
+        },
+        {
+          type: "step",
+          text: "$FRIEND, enraged and with new determination, manages to track you down and rescues you!",
+          time: 6000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "When you come to, you see $FRIEND and apologize. \"It's over, It's lost!\" you say...",
+          time: 5000
+        },
+        {
+          type: "step",
+          text: "\"Begging your pardon, but it's not lost, I took it! Only for safe keeping!\"",
+          time: 5000
+        },
+        {
+          type: "step",
+          text: "After a beat, $FRIEND gives you back the ring and you venture onward toward $MOUNT_DOOM...",
+          time: 4000
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your experience guides you up a safer path on $MOUNT_DOOM.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You avoid a deadly fall with your seasoned reflexes.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You climb the steep steppes of $MOUNT_DOOM, battling exhaustion...",
+          time: 8000,
+          reward: ['xp:0.5']
+        },
+        {
+          type: "step",
+          text: "At the summit, you prepare to destroy the ring, but $SECONDNPC appears to stop you!",
+          time: 6000
+        },
+        {
+          type: "sequence",
+          steps: [
+            {
+              type: "step",
+              text: "A dramatic confrontation ensues...",
+              time: 10000,
+              reward: ['xp:1.0']
+            },
+            {
+              type: "choice",
+              options: [
+                {
+                  type: "step",
+                  text: "You overpower $SECONDNPC and secure the ring.",
+                  time: 6000,
+                  reward: ['xp:0.5'],
+                  flag: "ringDestroyed"
+                },
+                {
+                  type: "step",
+                  text: "$SECONDNPC snatches the ring and flees.",
+                  time: 6000,
+                  reward: ['xp:0.5'],
+				  flag: "ringStolen"
+                },
+                {
+                  type: "step",
+                  text: "$SECONDNPC steals the ring, mocks you, and does a victory dance!",
+                  time: 6000,
+                  reward: ['xp:0.5'],
+				  flags: ["ringStolen", "ringDestroyed"]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 7500
+        }
+      ]
+    },
     outcomes: [
       {
         description: "You cast the ring into the fire! It is destroyed forever!",
+        condition: "(flags) => flags.ringDestroyed === true && !flags.ringStolen",
         rewards: ["xp:1500"],
         feedback: "You retire, comforted that the evil has been driven from the land... for now."
       },
       {
         description: "$SECONDNPC steals the ring and escapes, leaving you in despair.",
+        condition: "(flags) => !flags.ringDestroyed && flags.ringStolen === true",
         rewards: ["xp:150"],
         feedback: "Oh no! What will become of the world?"
       },
       {
-        description: "The ring slips from your grasp but falls into the fires accidentally!",
+        description: "Just then, $SECONDNPC slips and falls into the fires!",
+        condition: "(flags) => flags.ringDestroyed === true && flags.ringStolen === true",
         rewards: ["xp:1500"],
-        feedback: "The ring is gone—by luck or fate, the task is done."
+        feedback: "The ring is gone—by luck or fate, your task is done!"
       }
-    ],
-    nameTemplate: "The Quest to Destroy the Ring in $MOUNT_DOOM"
-  }
+    ]
+  },
+  {
+    type: "explorationQuest",
+    nameTemplate: "The Quest for $FIRSTITEM in $FIRSTLOCATION",
+    steps: {
+      type: "sequence",
+      steps: [
+        {
+          type: "step",
+          text: "$FIRSTNPC, a weary traveler, pleads for your help to recover the $FIRSTITEM lost in $FIRSTLOCATION.",
+          time: 12000
+        },
+        {
+          type: "step",
+          text: "You agree to the task and set out toward $FIRSTLOCATION...",
+          time: 5000
+        },
+        {
+          type: "choice",
+          options: [
+            {
+              type: "step",
+              text: "The journey is uneventful, and you reach $FIRSTLOCATION quickly.",
+              time: 4000,
+              weight: 1,
+              reward: ['xp:0.3']
+            },
+            {
+              type: "sequence",
+              steps: [
+                {
+                  type: "step",
+                  text: "A sudden storm forces you to take shelter in a cave.",
+                  time: 6000,
+                  weight: 2,
+                  reward: ['xp:0.5']
+                },
+                {
+                  type: "choice",
+                  options: [
+                    {
+                      type: "step",
+                      text: "You find ancient carvings hinting at the $FIRSTITEM's location.",
+                      time: 5000,
+                      reward: ['xp:0.7']
+                    },
+                    {
+                      type: "step",
+                      text: "A cave-in traps you briefly, but you escape.",
+                      time: 7000,
+                      reward: ['xp:0.8']
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              type: "sequence",
+              steps: [
+                {
+                  type: "step",
+                  text: "You’re ambushed by $FIRSTMONSTER en route!",
+                  time: 8000,
+                  weight: 1
+                },
+                {
+                  type: "choice",
+                  options: [
+                    {
+                      type: "step",
+                      text: "You defeat $FIRSTMONSTER with ease.",
+                      time: 6000,
+                      reward: ['xp:1.0', 'item:0.5']
+                    },
+                    {
+                      type: "step",
+                      text: "The fight is grueling, and you barely survive.",
+                      time: 8000,
+                      reward: ['xp:1.0']
+                    },
+                    {
+                      type: "chance",
+                      probability: 0.3,
+                      step: {
+                        type: "sequence",
+                        steps: [
+                          {
+                            type: "step",
+                            text: "$FIRSTNPC reveals they followed you and tries to steal your loot!",
+                            time: 7000
+                          },
+                          {
+                            type: "choice",
+                            options: [
+                              {
+                                type: "step",
+                                text: "You fend off $FIRSTNPC and keep your gains.",
+                                time: 5000,
+                                reward: ['xp:0.5', 'gold:0.8']
+                              },
+                              {
+                                type: "step",
+                                text: "$FIRSTNPC escapes with some of your gold!",
+                                time: 5000,
+                                reward: ['-gold:1.0']
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: "conditional",
+          condition: "game.Traits.Level >= 10",
+          step: {
+            type: "sequence",
+            steps: [
+              {
+                type: "step",
+                text: "Your exploration skills uncover a forgotten trail to $FIRSTLOCATION.",
+                time: 4000
+              },
+              {
+                type: "step",
+                text: "You avoid a perilous detour with your expertise.",
+                time: 3000,
+                reward: ['xp:0.8']
+              }
+            ]
+          }
+        },
+        {
+          type: "step",
+          text: "You arrive at $FIRSTLOCATION and begin your search...",
+          time: 6000
+        },
+        {
+          type: "step",
+          text: "$OUTCOME",
+          time: 8000
+        }
+      ]
+    },
+    outcomes: [
+      {
+        description: "You uncover the $FIRSTITEM amidst ancient ruins and return triumphant.",
+        condition: "(flags) => flags.itemFound === true",
+        rewards: ["xp:200", "item:$FIRSTITEM", "gold:scaled"],
+        feedback: "$FIRSTNPC rewards you richly for the $FIRSTITEM!",
+        flag: "itemFound"
+      },
+      {
+        description: "The $FIRSTITEM is nowhere to be found, lost to time.",
+        condition: "(flags) => flags.itemFound === undefined",
+        rewards: ["xp:100"],
+        feedback: "A fruitless endeavor, but you’ve gained experience."
+      },
+      {
+        description: "$SECONDMONSTER emerges from the shadows, claiming the $FIRSTITEM as its own!",
+        condition: "(flags) => flags.monsterEncounter === true",
+        rewards: ["xp:150"],
+        feedback: "You escape $SECONDMONSTER, but the $FIRSTITEM remains lost.",
+        flag: "monsterEncounter"
+      }
+    ]
+  },
+  {
+	  "type": "regexParody",
+	  "nameTemplate": "The Curious Case of the RegEx Escape Clause in $FIRSTLOCATION",
+	  "steps": {
+		"type": "sequence",
+		"steps": [
+		  {
+			"type": "step",
+			"text": "$FIRSTNPC, a wise programmer, tasks you with retrieving the Sacred Regex Tome from $FIRSTLOCATION.",
+			"time": 10000
+		  },
+		  {
+			"type": "step",
+			"text": "You journey to $FIRSTLOCATION, a land riddled with regex traps.",
+			"time": 5000
+		  },
+		  {
+			"type": "choice",
+			"options": [
+			  {
+				"type": "step",
+				"text": "You face a door with a regex lock: match all strings with 'quest'. You solve it!",
+				"time": 6000,
+				"reward": ["xp:0.5"],
+				"flag": "doorSolved"
+			  },
+			  {
+				"type": "step",
+				"text": "You fail to crack the regex lock and take a detour.",
+				"time": 6000,
+				"reward": ["xp:0.3"]
+			  }
+			]
+		  },
+		  {
+			"type": "conditional",
+			"condition": "flags.doorSolved === true",
+			"step": {
+			  "type": "step",
+			  "text": "The door opens, revealing a chamber with a treasure chest.",
+			  "time": 4000
+			}
+		  },
+		  {
+			"type": "choice",
+			"options": [
+			  {
+				"type": "step",
+				"text": "You unlock the chest with a regex pattern, finding loot!",
+				"time": 7000,
+				"reward": ["xp:0.7", "item:0.5"],
+				"flag": "chestOpened"
+			  },
+			  {
+				"type": "step",
+				"text": "The chest’s regex lock stumps you, and you move on.",
+				"time": 5000,
+				"reward": ["xp:0.2"]
+			  }
+			]
+		  },
+		  {
+			"type": "step",
+			"text": "Deeper in $FIRSTLOCATION, you sense the Regex Monster approaching.",
+			"time": 6000
+		  },
+		  {
+			"type": "sequence",
+			"steps": [
+			  {
+				"type": "step",
+				"text": "The Regex Monster emerges! You must craft a regex to defeat it.",
+				"time": 8000
+			  },
+			  {
+				"type": "choice",
+				"options": [
+				  {
+					"type": "step",
+					"text": "Your regex binds the monster, securing victory!",
+					"time": 10000,
+					"reward": ["xp:1.0", "item:Sacred Regex Tome"],
+					"flag": "monsterDefeated"
+				  },
+				  {
+					"type": "step",
+					"text": "Your regex fails, and the monster chases you off!",
+					"time": 10000,
+					"reward": ["xp:0.5"]
+				  }
+				]
+			  }
+			]
+		  },
+		  {
+			"type": "step",
+			"text": "$OUTCOME",
+			"time": 8000
+		  }
+		]
+	  },
+	  "outcomes": [
+		{
+		  "description": "You retrieve the Sacred Regex Tome and master regex!",
+		  "condition": "(flags) => flags.monsterDefeated === true",
+		  "rewards": ["xp:500", "item:Sacred Regex Tome"],
+		  "feedback": "You’re now a regex wizard!"
+		},
+		{
+		  "description": "The Regex Monster defeats you, forcing you to flee.",
+		  "condition": "(flags) => flags.monsterDefeated !== true",
+		  "rewards": ["xp:100"],
+		  "feedback": "Better luck next time, adventurer."
+		}
+	  ]
+	}
 ];

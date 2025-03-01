@@ -42,6 +42,20 @@ div.progress-container > div.bar {
   height: 12px;
 }
 
+.flash {
+  animation: flash 0.5s ease-in-out;
+}
+@keyframes flash {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; color: #ff4444; }
+  100% { opacity: 1; }
+}
+
+#enemyStats {
+  color: #ff4444; /* Red for enemy */
+  font-family: monospace; /* Clean readout */
+}
+
 div.hint { 
   z-index: 20;
   position: absolute;
